@@ -3,9 +3,10 @@
     if(isset($_POST['uname'], $_POST['pswd'])){
         session_start();
         $servername = "localhost:3306";
-        $username = "PCServer";
-        $password = 'wjAk3OysUNfZmnK';
-        $db = "USBRaidLogin";
+        $username = "userlogin";
+        $password = "wjAk3OysUNfZmnK";
+        //$password = "";
+        $db = "usbraidlogin";
         
         $uname = htmlspecialchars($_POST['uname']);
         $pswd = htmlspecialchars($_POST['pswd']);
@@ -18,7 +19,7 @@
         }
         else {
                     
-            $sql = "SELECT * FROM users WHERE uname=? and pswd=?";
+            $sql = "SELECT * FROM user WHERE uname=? and pswd=?";
             $stmt = $conn->prepare($sql);
         
             $stmt->bind_param("ss", $uname, $pswd);
