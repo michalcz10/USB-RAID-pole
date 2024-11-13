@@ -15,7 +15,7 @@
             die("Connection failed: " . $conn->connect_error);
         }
         else {
-            $sql = "SELECT * FROM user WHERE uname=?";
+            $sql = "SELECT * FROM users WHERE uname=?";
             $stmt = $conn->prepare($sql);
         
             $stmt->bind_param("s", $uname);
@@ -31,7 +31,7 @@
             } 
             else if($result)
             {
-                $sql = "INSERT INTO user(uname, pswd) VALUES (?, ?)";
+                $sql = "INSERT INTO users(uname, pswd) VALUES (?, ?)";
                 $stmt = $conn->prepare($sql);
                 
                 $hash = password_hash($pswd, PASSWORD_BCRYPT);

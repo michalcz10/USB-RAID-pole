@@ -21,7 +21,7 @@
             else 
             {
                         
-                $sql = "SELECT * FROM user WHERE uname=?";
+                $sql = "SELECT * FROM users WHERE uname=?";
                 $stmt = $conn->prepare($sql);
             
                 $stmt->bind_param("s", $uname);
