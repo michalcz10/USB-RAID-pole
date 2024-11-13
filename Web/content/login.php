@@ -3,8 +3,8 @@
     {
         session_start();
         $servername = "localhost:3306";
-        $username = "userlogin";
-        $password = "wjAk3OysUNfZmnK";
+        $username = "usermanager";
+        $password = "0uhW/5/f8xGT!GSP";
         $db = "usbraidlogin";
         
         $uname = htmlspecialchars($_POST['uname']);

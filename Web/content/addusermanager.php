@@ -1,8 +1,8 @@
 <?php
     if(isset($_POST['uname'], $_POST['pswd'])){
         $servername = "localhost:3306";
-        $username = "adduser";
-        $password = "2F0PhYna0EluvLW";
+        $username = "usermanager";
+        $password = "0uhW/5/f8xGT!GSP";
         $db = "usbraidlogin";
         
         $uname = htmlspecialchars($_POST['uname']);
