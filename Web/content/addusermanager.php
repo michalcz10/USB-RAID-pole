@@ -1,8 +1,15 @@
 <?php
-    if(isset($_POST['uname'], $_POST['pswd'])){
+session_start();
+    if (empty($_SESSION['admin']) || $_SESSION['admin'] !== true) {
+        session_destroy();
+        header("location: ../index.html");
+        exit();
+    }
+
+    else if(isset($_POST['uname'], $_POST['pswd'])){
         $servername = "localhost:3306";
-        $username = "usermanager";
-        $password = "0uhW/5/f8xGT!GSP";
+        $username = "userlogin";
+        $password = "zl*eDJmgT5sQNTuj";
         $db = "usbraidlogin";
         
         $uname = htmlspecialchars($_POST['uname']);

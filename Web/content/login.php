@@ -3,8 +3,8 @@
     {
         session_start();
         $servername = "localhost:3306";
-        $username = "usermanager";
-        $password = "0uhW/5/f8xGT!GSP";
+        $username = "userlogin";
+        $password = "zl*eDJmgT5sQNTuj";
         $db = "usbraidlogin";
         
         $uname = htmlspecialchars($_POST['uname']);
@@ -35,22 +35,29 @@
                     while($row = $result->fetch_assoc()) 
                     {
                         $hash = $row["pswd"];
+                        $admin = (bool)$row["admin"];
 
                         echo "Username: " . $uname . "<br>Password: " . $pswd . "<br>Hash: " . $hash;
 
                         if(password_verify($pswd, $hash)){
                             $_SESSION['uname'] = $uname;
+                            if($admin == true) 
+                            {
+                                $_SESSION['admin'] = $admin;
+                                header("Location: adduser.html");
+                                exit();
+                            }
                             header("Location: FTP.php");
-                            exit;
+                            exit();
                         } 
                     }
                     header("location: notAuthorized.html");
-                    exit;
+                    exit();
                 } 
                 else 
                 {
                    header("location: notAuthorized.html");
-                   exit;
+                   exit();
                 }
                 $result->free_result();
                 $stmt->close();
@@ -60,6 +67,6 @@
     else 
     {
         header("location: notAuthorized.html");
-        exit;
+        exit();
     }
 ?>
