@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="cz">
     <head>
-        <title>Login</title>
+        <title>AddUser</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link rel="stylesheet" href="../css/bootstrap.css">
@@ -18,8 +18,13 @@
         </style>
     </head>
     <body class="container-fluid text-center">
-        <header class="row topRow p-5">
-            <h1 class="border-dark border-bottom">USB Raid pole</h1>
+        <header class="row topRow border-dark border-bottom m-5">
+            <h1>USB Raid pole</h1>
+            <form action="logout.php" method="get">
+                <div class="mb-3">
+                <input type="submit" class="btn btn-danger" value="Logout" name="logoutBtn">
+                </div>
+            </form>
         </header>
 
         <section class="row">
@@ -43,7 +48,6 @@
                         <input type="submit" class="btn btn-primary" value="Add user">
                     </div>
                 </form>
-                
             </article>
 
             <aside class="col">

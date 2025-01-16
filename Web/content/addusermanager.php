@@ -1,8 +1,15 @@
 <?php
-    if(isset($_POST['uname'], $_POST['pswd'])){
+session_start();
+    if (empty($_SESSION['admin']) || $_SESSION['admin'] !== true) {
+        session_destroy();
+        header("location: ../index.html");
+        exit();
+    }
+
+    else if(isset($_POST['uname'], $_POST['pswd'])){
         $servername = "localhost:3306";
-        $username = "adduser";
-        $password = "2F0PhYna0EluvLW";
+        $username = "userlogin";
+        $password = "zl*eDJmgT5sQNTuj";
         $db = "usbraidlogin";
         
         $uname = htmlspecialchars($_POST['uname']);
@@ -15,7 +22,7 @@
             die("Connection failed: " . $conn->connect_error);
         }
         else {
-            $sql = "SELECT * FROM user WHERE uname=?";
+            $sql = "SELECT * FROM users WHERE uname=?";
             $stmt = $conn->prepare($sql);
         
             $stmt->bind_param("s", $uname);
@@ -31,7 +38,7 @@
             } 
             else if($result)
             {
-                $sql = "INSERT INTO user(uname, pswd) VALUES (?, ?)";
+                $sql = "INSERT INTO users(uname, pswd) VALUES (?, ?)";
                 $stmt = $conn->prepare($sql);
                 
                 $hash = password_hash($pswd, PASSWORD_BCRYPT);

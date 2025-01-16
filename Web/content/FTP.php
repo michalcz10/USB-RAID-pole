@@ -21,8 +21,13 @@
         </style>
     </head>
     <body class="container-fluid text-center">
-        <header class="row topRow p-5">
-            <h1 class="border-dark border-bottom">USB Raid pole</h1>
+        <header class="row topRow border-dark border-bottom m-5">
+            <h1>USB Raid pole</h1>
+            <form action="logout.php" method="get">
+                <div class="mb-3">
+                <input type="submit" class="btn btn-danger" value="Logout" name="logoutBtn">
+                </div>
+            </form>
         </header>
 
         <section class="row">
@@ -35,7 +40,7 @@
                 </div>
 
                 <div class="col">
-                    
+                    <p>FTP Zde</p>
                 </div>
 
                 <div class="col">
