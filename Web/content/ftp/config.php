@@ -3,10 +3,10 @@ require '../../vendor/autoload.php';
 use phpseclib3\Net\SFTP;
 
 // SFTP Configuration
-$host = '127.0.0.1';
-$username = 'laptop';
-$password = '1235';
-$defaultPath = '/home/laptop/WWWData';
+$host = 'IP_ADDRESS';
+$username = 'USER_NAME';
+$password = 'PASSWORD';
+$defaultPath = 'DEF_PATH';
 
 // Initialize SFTP connection
 function initializeSFTP($host, $username, $password) {
