@@ -47,7 +47,7 @@
                                 header("Location: adduser.html");
                                 exit();
                             }
-                            header("Location: FTP.php");
+                            header("Location: ftp/index.php");
                             exit();
                         } 
                     }
