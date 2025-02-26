@@ -33,7 +33,7 @@ session_start();
         
             if($result && $result->num_rows > 0)
             {
-                header("Location: addusererror.html");
+                header("Location: addusererror.php");
                 exit;
             } 
             else if($result)
@@ -47,12 +47,12 @@ session_start();
                 
                 $stmt->execute();
     
-                header("Location: addusersuccess.html");
+                header("Location: addusersuccess.php");
                 exit;
             }
             else 
             {
-                header("Location: addusererror.html");
+                header("Location: addusererror.php");
                 exit;
             }
             $result->free_result();

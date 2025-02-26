@@ -44,7 +44,7 @@
                             if($admin == true) 
                             {
                                 $_SESSION['admin'] = $admin;
-                                header("Location: adduser.html");
+                                header("Location: adduser.php");
                                 exit();
                             }
                             header("Location: ftp/index.php");
