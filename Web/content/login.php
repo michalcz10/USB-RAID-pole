@@ -2,10 +2,10 @@
     if(isset($_POST['uname'], $_POST['pswd']))
     {
         session_start();
-        $servername = "localhost:3306";
-        $username = "userlogin";
-        $password = "zl*eDJmgT5sQNTuj";
-        $db = "usbraidlogin";
+        $servername = "Server_IP_Address";
+        $username = "DBUserUsername";
+        $password = "DBuserPassword";
+        $db = "DBName";
         
         $uname = htmlspecialchars($_POST['uname']);
         $pswd = htmlspecialchars($_POST['pswd']);
@@ -44,7 +44,7 @@
                             if($admin == true) 
                             {
                                 $_SESSION['admin'] = $admin;
-                                header("Location: adduser.html");
+                                header("Location: adduser.php");
                                 exit();
                             }
                             header("Location: ftp/index.php");

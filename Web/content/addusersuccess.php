@@ -1,3 +1,12 @@
+<?php
+session_start();
+    if (empty($_SESSION['admin']) || $_SESSION['admin'] !== true) {
+        session_destroy();
+        header("location: ../index.html");
+        exit();
+    }
+?>
+
 <!DOCTYPE html>
 <html lang="cz">
     <head>
@@ -27,7 +36,7 @@
             </aside>
 
             <article class="col border border-2 border-primary rounded p-2 fixed">
-                <h4 class="text-danger p-3">User not added</h4>
+                <h4 class="text-success p-3">User added successfully</h4>
                 <a class="btn btn-primary" href="adduser.html">Zpět</a>
             </article>
 

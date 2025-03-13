@@ -7,10 +7,10 @@ session_start();
     }
 
     else if(isset($_POST['uname'], $_POST['pswd'])){
-        $servername = "localhost:3306";
-        $username = "userlogin";
-        $password = "zl*eDJmgT5sQNTuj";
-        $db = "usbraidlogin";
+        $servername = "Server_IP_Address";
+        $username = "DBUserUsername";
+        $password = "DBuserPassword";
+        $db = "DBName";
         
         $uname = htmlspecialchars($_POST['uname']);
         $pswd = htmlspecialchars($_POST['pswd']);
@@ -33,7 +33,7 @@ session_start();
         
             if($result && $result->num_rows > 0)
             {
-                header("Location: addusererror.html");
+                header("Location: addusererror.php");
                 exit;
             } 
             else if($result)
@@ -47,12 +47,12 @@ session_start();
                 
                 $stmt->execute();
     
-                header("Location: addusersuccess.html");
+                header("Location: addusersuccess.php");
                 exit;
             }
             else 
             {
-                header("Location: addusererror.html");
+                header("Location: addusererror.php");
                 exit;
             }
             $result->free_result();
