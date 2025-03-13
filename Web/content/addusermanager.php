@@ -7,10 +7,10 @@ session_start();
     }
 
     else if(isset($_POST['uname'], $_POST['pswd'])){
-        $servername = "localhost:3306";
-        $username = "userlogin";
-        $password = "zl*eDJmgT5sQNTuj";
-        $db = "usbraidlogin";
+        $servername = "Server_IP_Address";
+        $username = "DBUserUsername";
+        $password = "DBuserPassword";
+        $db = "DBName";
         
         $uname = htmlspecialchars($_POST['uname']);
         $pswd = htmlspecialchars($_POST['pswd']);
