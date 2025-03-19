@@ -27,12 +27,16 @@ if (isset($_POST['uname'], $_POST['pswd'])) {
                 $hash = $row["pswd"];
                 $admin = (bool)$row["admin"];
                 $defPath = $row["defPath"];
+                $delPer = $row["delPer"];
+                $downPer = $row["downPer"];
 
                 if (password_verify($pswd, $hash)) {
                     // Login successful
                     $_SESSION['uname'] = $uname;
                     $_SESSION['admin'] = $admin;
                     $_SESSION['defPath'] = $defPath;
+                    $_SESSION['downPer'] = $downPer;
+                    $_SESSION['delPer'] = $delPer;
                     header("Location: ftp/index.php");
                     exit();
                 }

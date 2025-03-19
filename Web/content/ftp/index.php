@@ -132,16 +132,21 @@
                                         <?php endif; ?>
                                     </td>
                                     <td>
+                                        <?php if(isset($_SESSION["delPer"]) && $_SESSION["delPer"] == true) { ?>
                                         <form method="POST" action="delete.php" style="display:inline;">
                                             <input type="hidden" name="delete" value="<?= htmlspecialchars($currentPath . '/' . $item) ?>">
                                             <button type="submit" class="btn btn-danger">Delete</button>
                                         </form>
+                                        <?php } ?>
+
+                                        <?php if(isset($_SESSION["downPer"]) && $_SESSION["downPer"] == true) { ?>
                                         <?php if (!$sftp->is_dir($item)): ?>
                                         <form method="POST" action="download.php" style="display:inline;">
                                             <input type="hidden" name="file" value="<?= htmlspecialchars($currentPath . '/' . $item) ?>">
                                             <button type="submit" class="btn btn-success">Download</button>
                                         </form>
                                         <?php endif; ?>
+                                        <?php } ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
