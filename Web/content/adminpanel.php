@@ -109,6 +109,9 @@ $result = $conn->query("SELECT uname, admin, defPath, delPer, downPer FROM users
         .form-check-label {
             margin-left: 0.5rem;
         }
+        body {
+                min-width: 950px;
+        }
     </style>
 </head>
 <body class="text-center">

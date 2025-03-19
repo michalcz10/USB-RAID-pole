@@ -32,6 +32,9 @@ if (empty($_SESSION)) {
                 flex: 0 0 300px;
                 min-width: 300px;
             }
+            body {
+                min-width: 500px;
+            }
         </style>
     </head>
     <body class="container-fluid text-center">

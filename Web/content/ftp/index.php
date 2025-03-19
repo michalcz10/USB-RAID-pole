@@ -45,6 +45,9 @@
             .dropzone.dragover { background-color: #e0f7fa; }
             .action-buttons { margin-bottom: 15px; }
             .action-buttons button { margin-right: 10px; }
+            body {
+                min-width: 500px;
+            }
         </style>
     </head>
     <body class="text-center">
