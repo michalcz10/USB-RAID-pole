@@ -136,10 +136,10 @@
                                     </td>
                                     <td>
                                         <?php if(isset($_SESSION["delPer"]) && $_SESSION["delPer"] == true) { ?>
-                                        <form method="POST" action="delete.php" style="display:inline;">
-                                            <input type="hidden" name="delete" value="<?= htmlspecialchars($currentPath . '/' . $item) ?>">
-                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                        </form>
+                                            <form method="POST" action="delete.php" style="display:inline;">
+                                                <input type="hidden" name="delete" value="<?= htmlspecialchars($currentPath . '/' . $item) ?>">
+                                                <button type="submit" class="btn btn-danger" onclick="confirmDelete(event)">Delete</button>
+                                            </form>
                                         <?php } ?>
 
                                         <?php if(isset($_SESSION["downPer"]) && $_SESSION["downPer"] == true) { ?>
@@ -385,6 +385,13 @@
                     }
                 };
                 xhr.send(formData);
+            }
+            function confirmDelete(event) {
+                event.preventDefault();
+                
+                if (confirm("Do you really want to delete this file?")) {
+                    event.target.form.submit();
+                }
             }
         </script>
  </div>
