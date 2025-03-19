@@ -2,11 +2,14 @@
 require '../../vendor/autoload.php';
 use phpseclib3\Net\SFTP;
 
+// Retrieve defPath from the session
+$defPath = $_SESSION['defPath'] ?? '/';
+
 // SFTP Configuration
-$host = 'IP_ADDRESS';
-$username = 'USER_NAME';
-$password = 'PASSWORD';
-$defaultPath = 'DEF_PATH';
+$host = 'localhost';
+$username = 'micalis';
+$password = 'Killedbysunny4535';
+$defaultPath = $defPath;
 
 // Initialize SFTP connection
 function initializeSFTP($host, $username, $password) {
@@ -30,3 +33,7 @@ function normalizePath($path) {
     }
     return '/' . implode('/', $stack);
 }
+
+// Example usage
+$sftp = initializeSFTP($host, $username, $password);
+$currentPath = normalizePath($defaultPath);

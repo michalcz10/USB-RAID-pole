@@ -1,20 +1,28 @@
 <?php
 session_start();
-    if (empty($_SESSION['admin']) || $_SESSION['admin'] !== true) {
+
+if (empty($_SESSION)) {
+    if (session_status() === PHP_SESSION_ACTIVE) {
         session_destroy();
-        header("location: ../index.html");
-        exit();
     }
+} elseif (isset($_SESSION["uname"])) {
+    header("location: content/ftp/index.php");
+    exit();
+} elseif (isset($_SESSION['login_error'])) {
+    echo "<script>alert('" . $_SESSION['login_error'] . "');</script>";
+    unset($_SESSION['login_error']);
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="cz">
     <head>
-        <title>AddUser</title>
+        <title>Login</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <link rel="stylesheet" href="../css/bootstrap.css">
-        <script src="../js/bootstrap.bundle.js"></script>
+        <link rel="stylesheet" href="css/bootstrap.css">
+        <script src="js/bootstrap.bundle.js"></script>
         <style>
             .topRow{
                 height: 20vh;
@@ -27,13 +35,8 @@ session_start();
         </style>
     </head>
     <body class="container-fluid text-center">
-        <header class="row topRow border-dark border-bottom m-5">
-            <h1>USB Raid pole</h1>
-            <form action="logout.php" method="get">
-                <div class="mb-3">
-                <input type="submit" class="btn btn-danger" value="Logout" name="logoutBtn">
-                </div>
-            </form>
+        <header class="row topRow p-5">
+            <h1 class="border-dark border-bottom">USB Raid pole</h1>
         </header>
 
         <section class="row">
@@ -42,7 +45,7 @@ session_start();
 
             <article class="col border border-2 border-primary rounded p-2 fixed">
 
-                <form action="addusermanager.php" method="post">
+                <form action="content/login.php" method="post">
                     <div class="mb-3">
                         <label for="uname">Username:</label>
                         <br>
@@ -54,9 +57,10 @@ session_start();
                         <input type="password" name="pswd" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <input type="submit" class="btn btn-primary" value="Add user">
+                        <input type="submit" class="btn btn-primary" value="Login">
                     </div>
                 </form>
+                
             </article>
 
             <aside class="col">
