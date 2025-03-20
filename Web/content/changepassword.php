@@ -86,40 +86,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html>
 <head>
     <title>Change Password</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="../js/bootstrap.bundle.js"></script>
     <style>
-        .topRow {
-            height: 20vh;
+        .container-fluid {
+            width: 100%;
+            padding-right: 15px;
+            padding-left: 15px;
+            margin-right: auto;
+            margin-left: auto;
         }
-        .custom-container {
-            max-width: 60%;
+        
+        .content-section {
+            max-width: 800px;
             margin: 0 auto;
         }
+        
         .change-password-form {
-            max-width: 400px;
+            max-width: 100%;
             margin: 0 auto;
         }
-        body {
-            min-width: 950px;
+        
+        @media (min-width: 768px) {
+            .change-password-form {
+                max-width: 400px;
+            }
+        }
+        
+        .hover-effect {
+            transition: opacity 0.3s ease;
+        }
+
+        .hover-effect:hover {
+            opacity: 0.8;
+        }
+        
+        .theme-light .dark-logo {
+            display: none;
+        }
+        
+        .theme-dark .light-logo {
+            display: none;
+        }
+        
+        .btn-group-responsive {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+        }
+        
+        @media (min-width: 576px) {
+            h1 {
+                font-size: 2.5rem;
+            }
         }
     </style>
 </head>
 <body class="text-center">
-    <div class="custom-container">
-        <header class="row topRow border-dark border-bottom m-5">
-            <h1>USB Raid pole</h1>
+    <div class="d-flex justify-content-end p-3">
+        <button id="themeToggle" class="btn btn-sm theme-toggle">
+            <i class="bi"></i>
+            <span id="themeText"></span>
+        </button>
+    </div>
+    
+    <div class="container-fluid">
+        <header class="row border-bottom my-3 my-md-5">
+            <h1>USB RAID Array</h1>
             <div class="mb-3 p-3">
-                <a href="logout.php" class="btn btn-danger">Logout</a>
-                <a href="ftp/index.php" class="btn btn-primary">Back to Files</a>
-                <?php if (isset($_SESSION["admin"]) && $_SESSION["admin"] == true) { ?>
-                    <a href="adminpanel.php" class="btn btn-primary">Admin Panel</a>
-                <?php } ?>
+                <div class="btn-group-responsive">
+                    <a href="logout.php" class="btn btn-danger">Logout</a>
+                    <a href="ftp/index.php" class="btn btn-primary">Back to Files</a>
+                    <?php if (isset($_SESSION["admin"]) && $_SESSION["admin"] == true) { ?>
+                        <a href="adminpanel.php" class="btn btn-primary">Admin Panel</a>
+                    <?php } ?>
+                </div>
             </div>
         </header>
-        <section class="row">
-            <aside class="col-2"></aside>
-            <article class="col border border-2 border-primary rounded p-2">
+        
+        <section class="row content-section">
+            <article class="col-12 border border-2 border-primary rounded p-2 p-md-4">
                 <h2 class="mb-4">Change Password</h2>
                 
                 <?php if ($message): ?>
@@ -144,11 +197,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <button type="submit" class="btn btn-primary">Change Password</button>
                 </form>
             </article>
-            <aside class="col-2"></aside>
         </section>
-        <footer class="row m-5">
-            <span>Developed by Michal Sedlák</span>
+        
+        <footer class="d-flex flex-column justify-content-center align-items-center p-3 border-top gap-3 m-3">
+            <span class="text-muted">Developed by Michal Sedlák</span>
+            <div class="d-flex gap-3 flex-wrap justify-content-center">
+                <a href="https://github.com/michalcz10/USB-RAID-pole" class="text-decoration-none" target="_blank" rel="noopener noreferrer">
+                    <img src="../img/GitHub_Logo.png" alt="GitHub Logo" class="img-fluid hover-effect light-logo" style="height: 32px;">
+                    <img src="../img/GitHub_Logo_White.png" alt="GitHub Logo" class="img-fluid hover-effect dark-logo" style="height: 32px;">
+                </a>
+                <a href="https://app.freelo.io/public/shared-link-view/?a=81efbcb4df761b3f29cdc80855b41e6d&b=4519c717f0729cc8e953af661e9dc981" class="text-decoration-none" target="_blank" rel="noopener noreferrer">
+                    <img src="../img/freelo-logo-rgb.png" alt="Freelo Logo" class="img-fluid hover-effect light-logo" style="height: 24px;">
+                    <img src="../img/freelo-logo-rgb-on-dark.png" alt="Freelo Logo" class="img-fluid hover-effect dark-logo" style="height: 24px;">
+                </a>
+            </div>
         </footer>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const themeToggle = document.getElementById('themeToggle');
+                const html = document.documentElement;
+                const themeText = document.getElementById('themeText');
+                const themeIcon = themeToggle.querySelector('.bi');
+                
+                function setTheme(theme) {
+                    html.setAttribute('data-bs-theme', theme);
+                    document.body.classList.remove('theme-light', 'theme-dark');
+                    document.body.classList.add('theme-' + theme);
+                    localStorage.setItem('theme', theme);
+                    
+                    if (theme === 'dark') {
+                        themeText.textContent = 'Light Mode';
+                        themeIcon.className = 'bi bi-sun';
+                        themeToggle.classList.remove('btn-dark');
+                        themeToggle.classList.add('btn-light');
+                    } else {
+                        themeText.textContent = 'Dark Mode';
+                        themeIcon.className = 'bi bi-moon';
+                        themeToggle.classList.remove('btn-light');
+                        themeToggle.classList.add('btn-dark');
+                    }
+                }
+                
+                const savedTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                
+                if (savedTheme) {
+                    setTheme(savedTheme);
+                } else {
+                    setTheme(prefersDark ? 'dark' : 'light');
+                }
+                
+                themeToggle.addEventListener('click', function() {
+                    const currentTheme = html.getAttribute('data-bs-theme');
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    setTheme(newTheme);
+                });
+            });
+        </script>
     </div>
 </body>
 </html>

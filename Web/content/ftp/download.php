@@ -1,10 +1,10 @@
 <?php
 // Set execution time limit to prevent infinite loops
-set_time_limit(300); // 5 minutes max execution time
+set_time_limit(900); // 15 minutes max execution time
 
-// Enable error reporting
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+// Only enable error reporting during development
+ini_set('display_errors', 0);
+error_reporting(0);
 
 // Start output buffering to capture any errors
 ob_start();
@@ -26,8 +26,68 @@ try {
         throw new Exception("Failed to connect to SFTP server: " . $e->getMessage());
     }
     
+    function zipFolderRecursive($sftp, $remoteBasePath, $currentPath, $zip, $logFile, &$tempFiles) {
+        file_put_contents($logFile, "Processing directory: $currentPath\n", FILE_APPEND);
+        
+        // Get list of files with error checking
+        $files = $sftp->nlist($currentPath);
+        
+        if ($files === false) {
+            file_put_contents($logFile, "Failed to list directory contents for: $currentPath\n", FILE_APPEND);
+            throw new Exception("Failed to list directory contents for: $currentPath");
+        }
+        
+        file_put_contents($logFile, "Found " . count($files) . " items in $currentPath\n", FILE_APPEND);
+        
+        foreach ($files as $file) {
+            // Skip directory entries
+            if ($file == '.' || $file == '..') continue;
+            
+            // Create full path for the remote file
+            $fullRemotePath = rtrim($currentPath, '/') . '/' . $file;
+            
+            // Calculate the relative path for the zip file
+            // This is the key change - we're now including the base directory name in the ZIP structure
+            $baseDirName = basename($remoteBasePath);
+            $relPathFromBase = substr($fullRemotePath, strlen(dirname($remoteBasePath)) + 1);
+            file_put_contents($logFile, "Processing: $fullRemotePath (relative: $relPathFromBase)\n", FILE_APPEND);
+            
+            // Check if it's a file or directory
+            $isDir = $sftp->is_dir($fullRemotePath);
+            
+            if ($isDir) {
+                file_put_contents($logFile, "Found subdirectory: $fullRemotePath\n", FILE_APPEND);
+                // Create directory in the zip
+                $zip->addEmptyDir($relPathFromBase);
+                
+                // Recursively process subdirectory
+                zipFolderRecursive($sftp, $remoteBasePath, $fullRemotePath, $zip, $logFile, $tempFiles);
+            } else {
+                // Create temporary file to store the downloaded content
+                $localTempFile = tempnam(sys_get_temp_dir(), 'sftp');
+                $tempFiles[] = $localTempFile;
+                file_put_contents($logFile, "Downloading to temp file: $localTempFile\n", FILE_APPEND);
+                
+                // Download the file with timeout
+                $downloadStart = time();
+                $downloadSuccess = $sftp->get($fullRemotePath, $localTempFile);
+                $downloadTime = time() - $downloadStart;
+                
+                if ($downloadSuccess) {
+                    $fileSize = filesize($localTempFile);
+                    file_put_contents($logFile, "Download successful ($downloadTime seconds), size: $fileSize bytes\n", FILE_APPEND);
+                    
+                    // Add file to zip with its relative path
+                    $zip->addFile($localTempFile, $relPathFromBase);
+                } else {
+                    file_put_contents($logFile, "Failed to download file after $downloadTime seconds\n", FILE_APPEND);
+                }
+            }
+        }
+    }
+    
     function zipFolder($sftp, $folderPath, $zipFilePath, $logFile) {
-        file_put_contents($logFile, "Starting to zip folder: $folderPath\n", FILE_APPEND);
+        file_put_contents($logFile, "Starting to zip folder recursively: $folderPath\n", FILE_APPEND);
         
         $zip = new ZipArchive();
         
@@ -36,75 +96,42 @@ try {
             throw new Exception("Unable to create the zip file.");
         }
         
-        // Get list of files with error checking
-        file_put_contents($logFile, "Listing files in: $folderPath\n", FILE_APPEND);
-        $files = $sftp->nlist($folderPath);
+        // We no longer add an empty root directory here - that was causing the duplication
         
-        if ($files === false) {
-            file_put_contents($logFile, "Failed to list directory contents\n", FILE_APPEND);
-            throw new Exception("Failed to list directory contents");
-        }
+        $tempFiles = [];
         
-        file_put_contents($logFile, "Found " . count($files) . " items\n", FILE_APPEND);
-        
-        foreach ($files as $file) {
-            // Skip directory entries
-            if ($file == '.' || $file == '..') continue;
+        // Process the directory recursively
+        try {
+            zipFolderRecursive($sftp, $folderPath, $folderPath, $zip, $logFile, $tempFiles);
             
-            // Create full path for the remote file
-            $fullRemotePath = rtrim($folderPath, '/') . '/' . $file;
-            file_put_contents($logFile, "Processing: $fullRemotePath\n", FILE_APPEND);
+            // Close the zip file
+            file_put_contents($logFile, "Closing zip file\n", FILE_APPEND);
+            $zipSuccess = $zip->close();
             
-            // Check if it's a file or directory
-            if ($sftp->is_dir($fullRemotePath)) {
-                file_put_contents($logFile, "Skipping directory: $file\n", FILE_APPEND);
-                continue;
-            }
-            
-            // Create temporary file to store the downloaded content
-            $localTempFile = tempnam(sys_get_temp_dir(), 'sftp');
-            file_put_contents($logFile, "Downloading to temp file: $localTempFile\n", FILE_APPEND);
-            
-            // Download the file with timeout
-            $downloadStart = time();
-            $downloadSuccess = $sftp->get($fullRemotePath, $localTempFile);
-            $downloadTime = time() - $downloadStart;
-            
-            if ($downloadSuccess) {
-                file_put_contents($logFile, "Download successful ($downloadTime seconds), size: " . filesize($localTempFile) . " bytes\n", FILE_APPEND);
-                
-                // Add file to zip
-                $zip->addFile($localTempFile, $file);
-                
-                // We'll clean up temp files manually at the end
-            } else {
-                @unlink($localTempFile);
-                file_put_contents($logFile, "Failed to download file after $downloadTime seconds\n", FILE_APPEND);
-            }
-        }
-        
-        // Close the zip file
-        file_put_contents($logFile, "Closing zip file\n", FILE_APPEND);
-        $zipSuccess = $zip->close();
-        
-        // Clean up temp files
-        foreach ($files as $file) {
-            if ($file == '.' || $file == '..') continue;
-            $fullRemotePath = rtrim($folderPath, '/') . '/' . $file;
-            if (!$sftp->is_dir($fullRemotePath)) {
-                $localTempFile = tempnam(sys_get_temp_dir(), 'sftp');
-                if (file_exists($localTempFile)) {
-                    @unlink($localTempFile);
+            // Clean up temp files
+            foreach ($tempFiles as $tempFile) {
+                if (file_exists($tempFile)) {
+                    @unlink($tempFile);
                 }
             }
-        }
-        
-        if ($zipSuccess) {
-            file_put_contents($logFile, "Zip created successfully, size: " . filesize($zipFilePath) . " bytes\n", FILE_APPEND);
-            return true;
-        } else {
-            file_put_contents($logFile, "Failed to create zip\n", FILE_APPEND);
-            return false;
+            
+            if ($zipSuccess) {
+                file_put_contents($logFile, "Zip created successfully, size: " . filesize($zipFilePath) . " bytes\n", FILE_APPEND);
+                return true;
+            } else {
+                file_put_contents($logFile, "Failed to create zip\n", FILE_APPEND);
+                return false;
+            }
+        } catch (Exception $e) {
+            // Clean up temp files on error
+            foreach ($tempFiles as $tempFile) {
+                if (file_exists($tempFile)) {
+                    @unlink($tempFile);
+                }
+            }
+            
+            file_put_contents($logFile, "Error during zip creation: " . $e->getMessage() . "\n", FILE_APPEND);
+            throw $e;
         }
     }
     
@@ -131,10 +158,12 @@ try {
             if (zipFolder($sftp, $file, $zipFilePath, $logFile)) {
                 // Check if the zip file was created and has content
                 if (file_exists($zipFilePath) && filesize($zipFilePath) > 0) {
-                    file_put_contents($logFile, "Sending zip file to browser\n", FILE_APPEND);
+                    file_put_contents($logFile, "Sending zip file to browser, size: " . filesize($zipFilePath) . " bytes\n", FILE_APPEND);
                     
-                    // Clear any output that might have been sent
-                    ob_clean();
+                    // End all output buffering
+                    while (ob_get_level()) {
+                        ob_end_clean();
+                    }
                     
                     // Send appropriate headers
                     header('Content-Type: application/zip');
@@ -143,7 +172,7 @@ try {
                     header('Cache-Control: no-cache, must-revalidate');
                     header('Pragma: no-cache');
                     
-                    // Output file contents and exit
+                    // Output file contents without any echo or print statements
                     readfile($zipFilePath);
                     file_put_contents($logFile, "Download completed\n", FILE_APPEND);
                     @unlink($zipFilePath);
@@ -174,8 +203,10 @@ try {
                 file_put_contents($logFile, "Downloaded file size: $fileSize bytes\n", FILE_APPEND);
                 
                 if ($fileSize > 0) {
-                    // Clear any output that might have been sent
-                    ob_clean();
+                    // End all output buffering
+                    while (ob_get_level()) {
+                        ob_end_clean();
+                    }
                     
                     // Send appropriate headers
                     header('Content-Type: application/octet-stream');
@@ -206,8 +237,10 @@ try {
     $errorMessage = "Error: " . $e->getMessage();
     file_put_contents($logFile, $errorMessage . "\n", FILE_APPEND);
     
-    // Clear any output that might have been sent
-    ob_clean();
+    // End all output buffering
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
     
     // Send error response
     header("HTTP/1.1 500 Internal Server Error");
