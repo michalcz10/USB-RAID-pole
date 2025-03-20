@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $defPath = htmlspecialchars($_POST['defPath']);
         $delPer = isset($_POST['delPer']) ? 1 : 0;
         $dowPer = isset($_POST['downPer']) ? 1 : 0;
+        $upPer = isset($_POST['upPer']) ? 1 : 0;
 
         $sql = "SELECT * FROM users WHERE uname=?";
         $stmt = $conn->prepare($sql);
@@ -42,13 +43,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result->num_rows > 0) {
             echo "<script>alert('Error: Username already exists!');</script>";
         } else {
-            $sql = "INSERT INTO users (uname, pswd, admin, defPath, delPer, downPer) VALUES (?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO users (uname, pswd, admin, defPath, delPer, downPer, upPer) VALUES (?, ?, ?, ?, ?, ?, ?)";
             echo "<script>console.log('SQL: " . $sql . "');</script>";
-            echo "<script>console.log('Params: " . json_encode([$uname, $pswd, $is_admin, $defPath, $delPer, $dowPer]) . "');</script>";
+            echo "<script>console.log('Params: " . json_encode([$uname, $pswd, $is_admin, $defPath, $delPer, $dowPer, $upPer]) . "');</script>";
 
             $stmt = $conn->prepare($sql);
             $hash = password_hash($pswd, PASSWORD_BCRYPT);
-            $stmt->bind_param("ssisii", $uname, $hash, $is_admin, $defPath, $delPer, $dowPer);
+            $stmt->bind_param("ssisii", $uname, $hash, $is_admin, $defPath, $delPer, $dowPer, $upPer);
 
             if ($stmt->execute()) {
                 echo "<script>alert('User added successfully!');</script>";
@@ -70,7 +71,7 @@ if (isset($_GET['delete'])) {
     echo "<script>alert('User deleted successfully!'); window.location.href='adminpanel.php';</script>";
 }
 
-$result = $conn->query("SELECT uname, admin, defPath, delPer, downPer FROM users");
+$result = $conn->query("SELECT uname, admin, defPath, delPer, downPer, upPer FROM users");
 ?>
 <!DOCTYPE html>
 <html>
@@ -118,10 +119,9 @@ $result = $conn->query("SELECT uname, admin, defPath, delPer, downPer FROM users
 <div class="custom-container">
     <header class="row topRow border-dark border-bottom m-5">
         <h1>USB Raid pole</h1>
-        <div class="mb-3">
+        <div class="mb-3 p-3">
             <a href="logout.php" class="btn btn-danger">Logout</a>
-            <br>
-            <br>
+            <a href="changepassword.php" class="btn btn-warning">Change Password</a>
             <a href="ftp/index.php" class="btn btn-primary">SFTP</a>
         </div>
     </header>
@@ -155,6 +155,10 @@ $result = $conn->query("SELECT uname, admin, defPath, delPer, downPer FROM users
                         <input type="checkbox" name="downPer" id="downPerCheck" value="1" class="form-check-input">
                         <label class="form-check-label" for="downPerCheck">Download Permission</label>
                     </div>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="upPer" id="upPerCheck" value="1" class="form-check-input">
+                        <label class="form-check-label" for="upPerCheck">Upload Permission</label>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary">Add User</button>
             </form>
@@ -167,6 +171,7 @@ $result = $conn->query("SELECT uname, admin, defPath, delPer, downPer FROM users
                         <th>Default Path</th>
                         <th>Delete Permission</th>
                         <th>Download Permission</th>
+                        <th>Upload Permission</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -178,6 +183,7 @@ $result = $conn->query("SELECT uname, admin, defPath, delPer, downPer FROM users
                             <td><?php echo htmlspecialchars($row['defPath']); ?></td>
                             <td><?php echo $row['delPer'] ? 'Yes' : 'No'; ?></td>
                             <td><?php echo $row['downPer'] ? 'Yes' : 'No'; ?></td>
+                            <td><?php echo $row['upPer'] ? 'Yes' : 'No'; ?></td>
                             <td>
                                 <button class="btn btn-danger btn-sm" onclick="confirmDelete('<?php echo htmlspecialchars($row['uname']); ?>')">Delete</button>
                             </td>

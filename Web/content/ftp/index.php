@@ -55,10 +55,9 @@
         <header class="row topRow border-dark border-bottom m-5">
             <h1>USB Raid pole</h1>
             
-            <div class="mb-3">
+            <div class="mb-3 p-3">
                 <a href="../logout.php" class="btn btn-danger">Logout</a>
-                <br>
-                <br>
+                <a href="../changepassword.php" class="btn btn-warning">Change Password</a>
                 <?php if (isset($_SESSION["admin"]) && $_SESSION["admin"] == true) { ?>
                     <a href="../adminpanel.php" class="btn btn-primary">Admin Panel</a>
                 <?php } ?>
@@ -78,11 +77,13 @@
                 <div class="col">
                     <!-- Action Buttons -->
                     <div class="action-buttons">
+                        <?php if(isset($_SESSION["upPer"]) && $_SESSION["upPer"] == true) { ?>
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createDirModal">Create Directory</button>
                         <button type="button" class="btn btn-success" onclick="document.getElementById('fileInput').click()">Upload Files</button>
                         <button type="button" class="btn btn-info" onclick="document.getElementById('dirInput').click()">Upload Directory</button>
                         <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileSelect(event)">
                         <input type="file" id="dirInput" webkitdirectory directory multiple style="display: none;" onchange="handleFileSelect(event)">
+                        <?php } ?>
                     </div>
 
                     <!-- Create Directory Dialog -->
@@ -106,10 +107,13 @@
                             </div>
                         </div>
                     </div>
-
+                    
+                    <?php if(isset($_SESSION["upPer"]) && $_SESSION["upPer"] == true) { ?>
                     <div class="dropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
                         Drop files or folders here to upload
                     </div>
+                    <?php } ?>
+                    
                     <table>
                         <thead>
                             <tr>
@@ -143,12 +147,10 @@
                                         <?php } ?>
 
                                         <?php if(isset($_SESSION["downPer"]) && $_SESSION["downPer"] == true) { ?>
-                                        <?php if (!$sftp->is_dir($item)): ?>
-                                        <form method="POST" action="download.php" style="display:inline;">
-                                            <input type="hidden" name="file" value="<?= htmlspecialchars($currentPath . '/' . $item) ?>">
-                                            <button type="submit" class="btn btn-success">Download</button>
-                                        </form>
-                                        <?php endif; ?>
+                                            <form method="POST" action="download.php" style="display:inline;">
+                                                <input type="hidden" name="file" value="<?= htmlspecialchars($currentPath . '/' . $item) ?>">
+                                                <button type="submit" class="btn btn-success">Download</button>
+                                            </form>
                                         <?php } ?>
                                     </td>
                                 </tr>
