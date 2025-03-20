@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $stmt = $conn->prepare($sql);
             $hash = password_hash($pswd, PASSWORD_BCRYPT);
-            $stmt->bind_param("ssisii", $uname, $hash, $is_admin, $defPath, $delPer, $dowPer, $upPer);
+            $stmt->bind_param("ssisiii", $uname, $hash, $is_admin, $defPath, $delPer, $dowPer, $upPer);
 
             if ($stmt->execute()) {
                 echo "<script>alert('User added successfully!');</script>";
