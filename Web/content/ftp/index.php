@@ -4,148 +4,652 @@
     if(!isset($_SESSION['uname'])){
         header("location: ../index.html");
         session_destroy();
+        exit;
     }
+
+    // Include this at the top to see potential errors
+    // Comment out in production
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL);
+
+    require 'config.php';
+    $sftp = initializeSFTP($host, $username, $password);
+
+    $currentPath = isset($_GET['path']) ? normalizePath($_GET['path']) : $defaultPath;
+    if (strpos($currentPath, $defaultPath) !== 0) {
+        $currentPath = $defaultPath;
+    }
+    
+    // Check SFTP connection before using it
+    if (!$sftp->chdir($currentPath)) {
+        die("Failed to navigate to the selected folder: $currentPath");
+    }
+
+    $items = $sftp->nlist();
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>FTP</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="../../css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="../../js/bootstrap.bundle.js"></script>
+    <style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
 
-<?php
-require 'config.php';
-$sftp = initializeSFTP($host, $username, $password);
+    .custom-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        max-width: 100%;
+        overflow: hidden;
+    }
 
-$currentPath = isset($_GET['path']) ? normalizePath($_GET['path']) : $defaultPath;
-if (strpos($currentPath, $defaultPath) !== 0) {
-    $currentPath = $defaultPath;
-}
-if (!$sftp->chdir($currentPath)) {
-    die("Failed to navigate to the selected folder: $currentPath");
-}
+    section.row {
+        flex: 1;
+        margin: 0;
+        width: 100%;
+        justify-content: center;
+    }
 
-$items = $sftp->nlist();
+    article.col-8 {
+        max-width: 1600px;
+    }
 
-?>
+    @media (max-width: 1800px) {
+        article.col-8 {
+            flex: 0 0 auto;
+            width: 95%;
+        }
+    }
 
+    @media (max-width: 768px) {
+        .custom-container {
+            height: auto;
+            min-height: initial;
+        }
+        
+        section.row {
+            flex: 0 0 auto;
+        }
+        
+        footer {
+            margin-top: 20px;
+            position: relative;
+        }
+        
+        body {
+            height: auto;
+            min-height: initial;
+        }
+        
+        article {
+            padding-bottom: 20px;
+        }
+    }
 
-    <head>
-        <title>FTP</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <link rel="stylesheet" href="../../css/bootstrap.css">
-        <script src="../../js/bootstrap.bundle.js"></script>
-        <style>
-            .topRow{
-                height: 20vh;
-            }
-        </style>
-        <style>
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-        .dropzone { width: 100%; padding: 20px; border: 2px dashed #007bff; border-radius: 10px; text-align: center; margin-bottom: 20px; cursor: pointer; }
-        .dropzone.dragover { background-color: #e0f7fa; }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        table-layout: fixed;
+    }
+
+    th, td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: left;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .dropzone {
+        width: 100%;
+        padding: 20px;
+        border: 2px dashed #007bff;
+        border-radius: 10px;
+        text-align: center;
+        margin-bottom: 20px;
+        cursor: pointer;
+        box-sizing: border-box;
+    }
+
+    .dropzone.dragover {
+        background-color: #e0f7fa;
+    }
+
+    .action-buttons {
+        margin-bottom: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .action-buttons button {
+        margin-right: 0;
+    }
+
+    body {
+        min-width: 500px;
+    }
+
+    .hover-effect {
+        transition: opacity 0.3s ease;
+    }
+
+    .hover-effect:hover {
+        opacity: 0.8;
+    }
+
+    .theme-light .dark-logo {
+        display: none;
+    }
+
+    .theme-dark .light-logo {
+        display: none;
+    }
+
+    footer {
+        margin-top: auto;
+        padding: 20px;
+        border-top: 1px solid #ddd;
+        width: 100%;
+    }
     </style>
-    </head>
-    <body class="container-fluid text-center">
-        <header class="row topRow border-dark border-bottom m-5">
-            <h1>USB Raid pole</h1>
-            <form action="../logout.php" method="get">
-                <div class="mb-3">
-                <input type="submit" class="btn btn-danger" value="Logout" name="logoutBtn">
+</head>
+<body class="text-center">
+<div class="d-flex justify-content-end p-3">
+    <button id="themeToggle" class="btn btn-sm theme-toggle">
+        <i class="bi"></i>
+        <span id="themeText"></span>
+    </button>
+</div>
+<div class="custom-container">
+<header class="row border-bottom m-5">
+    <h1>USB RAID Array</h1>
+    <div class="mb-3 p-3">
+        <a href="../logout.php" class="btn btn-danger">Logout</a>
+        <a href="../changepassword.php" class="btn btn-warning">Change Password</a>
+        <?php if (isset($_SESSION["admin"]) && $_SESSION["admin"] == true) { ?>
+            <a href="../adminpanel.php" class="btn btn-primary">Admin Panel</a>
+        <?php } ?>
+    </div>
+</header>
+
+<section class="row">
+
+    <article class="col-8 border border-2 border-primary rounded p-2">
+        <div class="col">
+            <h4>Current Path: <?= htmlspecialchars($currentPath) ?></h4>
+        </div>
+
+        <div class="col">
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <?php if (isset($_SESSION["upPer"]) && $_SESSION["upPer"] == true) { ?>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createFileModal">Create File</button>
+                    <button type="button" class="btn btn-success" onclick="document.getElementById('fileInput').click()">Upload Files</button>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createDirModal">Create Directory</button>
+                    <button type="button" class="btn btn-info" onclick="document.getElementById('dirInput').click()">Upload Directory</button>
+                    <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileSelect(event)">
+                    <input type="file" id="dirInput" webkitdirectory directory multiple style="display: none;" onchange="handleFileSelect(event)">
+                <?php } ?>
+            </div>
+
+            <!-- Create Directory Dialog -->
+            <div class="modal fade" id="createFileModal" tabindex="-1" aria-labelledby="createFileModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="createFileModalLabel">Create New File</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="fileName" class="form-label">File Name (with extension)</label>
+                                <input type="text" class="form-control" id="fileName" placeholder="example.txt">
+                                <div class="form-text">Supported extensions: .txt, .html, .css, .js, .php, etc.</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="createFile()">Create</button>
+                        </div>
+                    </div>
                 </div>
-            </form>
-        </header>
+            </div>
 
-        <section class="row">
-            <aside class="col">
-            </aside>
-
-            <article class="col-8 border border-2 border-primary rounded p-2">
-                <div class="col">
-
+            <!-- Create File Dialog -->
+            <div class="modal fade" id="createFileModal" tabindex="-1" aria-labelledby="createFileModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="createFileModalLabel">Create New File</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="fileName" class="form-label">File Name (with extension)</label>
+                                <input type="text" class="form-control" id="fileName" placeholder="Enter file name (e.g., myfile.txt)">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="createFile()">Create</button>
+                        </div>
+                    </div>
                 </div>
+            </div>
 
-                <div class="col">
+            <?php if (isset($_SESSION["upPer"]) && $_SESSION["upPer"] == true) { ?>
                 <div class="dropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-    Drop files or folders here to upload
+                    Drop files or folders here to upload
                 </div>
-                <table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php if ($currentPath !== $defaultPath): ?>
-        <tr>
-            <td colspan="2"><a href="?path=<?= urlencode(dirname($currentPath)) ?>">.. (Go Back)</a></td>
-        </tr>
-        <?php endif; ?>
+            <?php } ?>
 
-        <?php foreach ($items as $item): ?>
-            <?php if ($item === '.' || $item === '..') continue; ?>
-            <tr>
-                <td>
-                    <?php if ($sftp->is_dir($item)): ?>
-                        <a href="?path=<?= urlencode($currentPath . '/' . $item) ?>"><?= htmlspecialchars($item) ?>/</a>
-                    <?php else: ?>
-                        <?= htmlspecialchars($item) ?>
-                    <?php endif; ?>
-                </td>
-                <td>
-                    <form method="POST" action="delete.php" style="display:inline;">
-                        <input type="hidden" name="delete" value="<?= htmlspecialchars($currentPath . '/' . $item) ?>">
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
-                    <?php if (!$sftp->is_dir($item)): ?>
-                    <form method="POST" action="download.php" style="display:inline;">
-                        <input type="hidden" name="file" value="<?= htmlspecialchars($currentPath . '/' . $item) ?>">
-                        <button type="submit" class="btn btn-success">Download</button>
-                    </form>
-                    <?php endif; ?>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $directories = [];
+                    $files = [];
 
-<script>
-function handleDragOver(event) {
-    event.preventDefault();
-    event.currentTarget.classList.add('dragover');
-}
+                    foreach ($items as $item) {
+                        if ($item === '.' || $item === '..') continue;
 
-function handleDragLeave(event) {
-    event.currentTarget.classList.remove('dragover');
-}
+                        if ($sftp->is_dir($item)) {
+                            $directories[] = $item;
+                        } else {
+                            $files[] = $item;
+                        }
+                    }
 
-function handleDrop(event) {
-    event.preventDefault();
-    event.currentTarget.classList.remove('dragover');
+                    // Sort directories and files alphabetically
+                    sort($directories, SORT_STRING | SORT_FLAG_CASE);
+                    sort($files, SORT_STRING | SORT_FLAG_CASE);
 
-    const files = event.dataTransfer.files;
-    const formData = new FormData();
+                    if ($currentPath !== $defaultPath) : ?>
+                        <tr>
+                            <td colspan="2"><a class="text-danger" href="?path=<?= urlencode(dirname($currentPath)) ?>"><b>.. (Go Back)</b></a></td>
+                        </tr>
+                    <?php endif;
 
-    for (const file of files) {
-        formData.append('files[]', file, file.webkitRelativePath || file.name);
+                    foreach ($directories as $directory) : ?>
+                        <tr>
+                            <td>
+                                <a href="?path=<?= urlencode($currentPath . '/' . $directory) ?>"><?= htmlspecialchars($directory) ?>/</a>
+                            </td>
+                            <td>
+                                <?php if (isset($_SESSION["delPer"]) && $_SESSION["delPer"] == true) : ?>
+                                    <form method="POST" action="delete.php" style="display:inline;">
+                                        <input type="hidden" name="delete" value="<?= htmlspecialchars($currentPath . '/' . $directory) ?>">
+                                        <button type="submit" class="btn btn-danger" onclick="confirmDelete(event)">Delete</button>
+                                    </form>
+                                <?php endif; ?>
+
+                                <?php if (isset($_SESSION["downPer"]) && $_SESSION["downPer"] == true) : ?>
+                                    <form method="POST" action="download.php" style="display:inline;">
+                                        <input type="hidden" name="file" value="<?= htmlspecialchars($currentPath . '/' . $directory) ?>">
+                                        <button type="submit" class="btn btn-success">Download</button>
+                                    </form>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach;
+
+                    foreach ($files as $file) : ?>
+                        <tr>
+                            <td>
+                                <?php
+                                $editableExtensions = ['txt', 'html', 'css', 'js', 'php', 'xml', 'json', 'md', 'csv', 'log', 'ini', 'conf', 'sh', 'bat', 'py', 'rb', 'java', 'c', 'cpp', 'h', 'hpp'];
+                                $fileExtension = pathinfo($file, PATHINFO_EXTENSION);
+
+                                if (in_array(strtolower($fileExtension), $editableExtensions)) : ?>
+                                    <a class="text-warning-emphasis" href="open.php?file=<?= urlencode($currentPath . '/' . $file) ?>"><?= htmlspecialchars($file) ?></a>
+                                    <span class="badge bg-secondary rounded-pill"><?= htmlspecialchars($fileExtension) ?></span>
+                                <?php else : ?>
+                                    <?= htmlspecialchars($file) ?>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if (isset($_SESSION["delPer"]) && $_SESSION["delPer"] == true) : ?>
+                                    <form method="POST" action="delete.php" style="display:inline;">
+                                        <input type="hidden" name="delete" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
+                                        <button type="submit" class="btn btn-danger" onclick="confirmDelete(event)">Delete</button>
+                                    </form>
+                                <?php endif; ?>
+
+                                <?php if (isset($_SESSION["downPer"]) && $_SESSION["downPer"] == true) : ?>
+                                    <form method="POST" action="download.php" style="display:inline;">
+                                        <input type="hidden" name="file" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
+                                        <button type="submit" class="btn btn-success">Download</button>
+                                    </form>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        </article>
+
+        <footer class="d-flex flex-column justify-content-center align-items-center p-3 border-top gap-3 m-3">
+        <span class="text-muted">Developed by Michal Sedlák</span>
+        <div class="d-flex gap-3">
+            <a href="https://github.com/michalcz10/USB-RAID-pole" class="text-decoration-none" target="_blank" rel="noopener noreferrer">
+                <img src="../../img/GitHub_Logo.png" alt="GitHub Logo" class="img-fluid hover-effect light-logo" style="height: 32px;">
+                <img src="../../img/GitHub_Logo_White.png" alt="GitHub Logo" class="img-fluid hover-effect dark-logo" style="height: 32px;">
+            </a>
+            <a href="https://app.freelo.io/public/shared-link-view/?a=81efbcb4df761b3f29cdc80855b41e6d&b=4519c717f0729cc8e953af661e9dc981" class="text-decoration-none" target="_blank" rel="noopener noreferrer">
+                <img src="../../img/freelo-logo-rgb.png" alt="Freelo Logo" class="img-fluid hover-effect light-logo" style="height: 24px;">
+                <img src="../../img/freelo-logo-rgb-on-dark.png" alt="Freelo Logo" class="img-fluid hover-effect dark-logo" style="height: 24px;">
+            </a>
+        </div>
+        </footer>
+    </div>
+    <script>
+        function handleDragOver(event) {
+        event.preventDefault();
+        event.currentTarget.classList.add('dragover');
     }
 
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'upload.php', true);
-    xhr.onload = () => {
-        if (xhr.status === 200) alert('Upload successful!');
-        else alert('Upload failed: ' + xhr.statusText);
-    };
-    xhr.send(formData);
-}
-</script>
-                </div>
+    function handleDragLeave(event) {
+        event.currentTarget.classList.remove('dragover');
+    }
 
-                <div class="col">
+    function handleDrop(event) {
+        event.preventDefault();
+        event.currentTarget.classList.remove('dragover');
+
+        if (event.dataTransfer.items) {
+            const items = event.dataTransfer.items;
+            processDroppedItems(items);
+        } else {
+            const files = event.dataTransfer.files;
+            uploadFiles(files);
+        }
+    }
+
+    function processDroppedItems(items) {
+        const allFiles = [];
+        let pendingItems = 0;
+        
+        function handleEntry(entry, path = '') {
+            if (entry.isFile) {
+                pendingItems++;
+                entry.file(file => {
+                    Object.defineProperty(file, 'webkitRelativePath', {
+                        value: path + file.name
+                    });
                     
-                </div>
-            </article>
+                    allFiles.push(file);
+                    pendingItems--;
 
-            <aside class="col">
-            </aside>
-        </section>
-        <footer class="row m-5">
-</footer>
-    </body>
+                    if (pendingItems === 0) {
+                        uploadFiles(allFiles);
+                    }
+                });
+            } else if (entry.isDirectory) {
+                const reader = entry.createReader();
+                readEntries(reader, path + entry.name + '/');
+            }
+        }
+        
+        // Function to read entries from a directory reader
+        function readEntries(reader, path) {
+            pendingItems++;
+            reader.readEntries(entries => {
+                if (entries.length > 0) {
+                    for (const entry of entries) {
+                        handleEntry(entry, path);
+                    }
+                    readEntries(reader, path);
+                }
+                pendingItems--;
+                
+                if (pendingItems === 0 && allFiles.length > 0) {
+                    uploadFiles(allFiles);
+                }
+            });
+        }
+        
+        // Process each dropped item
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.kind !== 'file') continue;
+            
+            const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : item.getAsEntry();
+            if (entry) {
+                handleEntry(entry);
+            }
+        }
+        
+        // If there are no items to process, show an error
+        if (pendingItems === 0 && allFiles.length === 0) {
+            alert('No valid files or directories found.');
+        }
+    }
+
+    function handleFileSelect(event) {
+        const files = event.target.files;
+        uploadFiles(files);
+    }
+
+    function uploadFiles(files) {
+        // Validate files
+        if (!files || files.length === 0) {
+            alert('No files selected for upload.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('currentPath', '<?php echo $currentPath; ?>');
+
+        let filesAdded = 0;
+        let directories = new Set();
+        
+        // Track directories to create
+        for (const file of files) {
+            const relativePath = file.webkitRelativePath || '';
+            
+            // If there's a relative path, extract directories
+            if (relativePath) {
+                const parts = relativePath.split('/');
+                let currentPath = '';
+                for (let i = 0; i < parts.length - 1; i++) {
+                    currentPath += (i > 0 ? '/' : '') + parts[i];
+                    if (currentPath) {
+                        directories.add(currentPath);
+                    }
+                }
+            }
+            
+            formData.append('files[]', file);
+            formData.append('paths[]', relativePath);
+            filesAdded++;
+        }
+
+        // Add directories to create
+        if (directories.size > 0) {
+            formData.append('create_dirs', JSON.stringify(Array.from(directories)));
+        }
+
+        if (filesAdded === 0) {
+            alert('No valid files selected for upload.');
+            return;
+        }
+
+        // Show upload progress
+        const uploadStatus = document.createElement('div');
+        uploadStatus.className = 'alert alert-info';
+        uploadStatus.textContent = 'Uploading files, please wait...';
+        document.querySelector('.action-buttons').after(uploadStatus);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'upload.php', true);
+        
+        // Handle errors
+        xhr.onerror = () => {
+            uploadStatus.className = 'alert alert-danger';
+            uploadStatus.textContent = 'Network error occurred during upload.';
+            setTimeout(() => uploadStatus.remove(), 5000);
+        };
+        
+        // Handle timeouts
+        xhr.timeout = 300000; // 5 minutes
+        xhr.ontimeout = () => {
+            uploadStatus.className = 'alert alert-danger';
+            uploadStatus.textContent = 'Upload timed out. Try with smaller files or fewer files.';
+            setTimeout(() => uploadStatus.remove(), 5000);
+        };
+
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                uploadStatus.className = 'alert alert-success';
+                uploadStatus.textContent = 'Upload successful!';
+                setTimeout(() => {
+                    uploadStatus.remove();
+                    window.location.reload(); // Reload to show new files
+                }, 1500);
+            } else {
+                uploadStatus.className = 'alert alert-danger';
+                uploadStatus.textContent = 'Upload failed: ' + (xhr.responseText || xhr.statusText);
+                setTimeout(() => uploadStatus.remove(), 5000);
+            }
+        };
+
+        xhr.send(formData);
+    }
+
+    function createDirectory() {
+        const dirName = document.getElementById('dirName').value.trim();
+        if (!dirName) {
+            alert('Please enter a directory name.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('currentPath', '<?php echo $currentPath; ?>');
+        formData.append('dirName', dirName);
+        formData.append('action', 'createDir');
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'createdir.php', true);
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                alert('Directory created successfully!');
+                const modal = bootstrap.Modal.getInstance(document.getElementById('createDirModal'));
+                if (modal) modal.hide();
+                window.location.reload();
+            } else {
+                alert('Failed to create directory: ' + xhr.responseText || xhr.statusText);
+            }
+        };
+        xhr.send(formData);
+    }
+    function confirmDelete(event) {
+        event.preventDefault();
+        
+        if (confirm("Do you really want to delete this file?")) {
+            event.target.form.submit();
+        }
+    }
+    function createFile() {
+        const fileName = document.getElementById('fileName').value.trim();
+        if (!fileName) {
+            alert('Please enter a file name.');
+            return;
+        }
+        
+        // Check if file has an extension
+        if (fileName.indexOf('.') === -1) {
+            alert('Please include a file extension (e.g., .txt, .html, .php)');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('currentPath', '<?php echo $currentPath; ?>');
+        formData.append('fileName', fileName);
+        formData.append('action', 'createFile');
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'createfile.php', true);
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        alert('File created successfully!');
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('createFileModal'));
+                        if (modal) modal.hide();
+                        window.location.reload();
+                    } else {
+                        alert('Failed to create file: ' + (response.message || 'Unknown error'));
+                    }
+                } catch (e) {
+                    alert('Error processing response: ' + xhr.responseText);
+                }
+            } else {
+                alert('Failed to create file: ' + xhr.responseText || xhr.statusText);
+            }
+        };
+        xhr.send(formData);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const themeText = document.getElementById('themeText');
+        const themeIcon = themeToggle.querySelector('.bi');
+        
+        function setTheme(theme) {
+            html.setAttribute('data-bs-theme', theme);
+            document.body.classList.remove('theme-light', 'theme-dark');
+            document.body.classList.add('theme-' + theme);
+            localStorage.setItem('theme', theme);
+            
+            if (theme === 'dark') {
+                themeText.textContent = 'Light Mode';
+                themeIcon.className = 'bi bi-sun';
+                themeToggle.classList.remove('btn-dark');
+                themeToggle.classList.add('btn-light');
+            } else {
+                themeText.textContent = 'Dark Mode';
+                themeIcon.className = 'bi bi-moon';
+                themeToggle.classList.remove('btn-light');
+                themeToggle.classList.add('btn-dark');
+            }
+        }
+        
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme) {
+            setTheme(savedTheme);
+        } else {
+            setTheme(prefersDark ? 'dark' : 'light');
+        }
+        
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = html.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+    });
+    </script>
+</body>
+</html>
