@@ -96,7 +96,7 @@ $parentDir = dirname($filePath);
             text-align: right;
             padding: 10px 5px 10px 0;
             border-right: 1px solid #ccc;
-            background-color: #f5f5f5;
+            background-color: transparent;
             color: #999;
             user-select: none;
             font-family: monospace;

@@ -82,7 +82,7 @@ if (empty($_SESSION)) {
     </div>
     
     <header class="row border-bottom m-5">
-        <h1>USB Raid pole</h1>
+        <h1>USB RAID Array</h1>
     </header>
 
     <main>

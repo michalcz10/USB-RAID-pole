@@ -159,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <div class="container-fluid">
         <header class="row border-bottom my-3 my-md-5">
-            <h1>USB Raid pole</h1>
+            <h1>USB RAID Array</h1>
             <div class="mb-3 p-3">
                 <div class="btn-group-responsive">
                     <a href="logout.php" class="btn btn-danger">Logout</a>

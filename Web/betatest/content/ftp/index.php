@@ -176,7 +176,7 @@
 </div>
 <div class="custom-container">
 <header class="row border-bottom m-5">
-    <h1>USB Raid pole</h1>
+    <h1>USB RAID Array</h1>
     <div class="mb-3 p-3">
         <a href="../logout.php" class="btn btn-danger">Logout</a>
         <a href="../changepassword.php" class="btn btn-warning">Change Password</a>
