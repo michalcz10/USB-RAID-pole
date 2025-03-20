@@ -147,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <aside class="col-2"></aside>
         </section>
         <footer class="row m-5">
-
+            <span>Developed by Michal Sedlák</span>
         </footer>
     </div>
 </body>

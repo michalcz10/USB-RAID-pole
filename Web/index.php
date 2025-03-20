@@ -70,7 +70,7 @@ if (empty($_SESSION)) {
             </aside>
         </section>
         <footer class="row m-5">
-
+            <span>Developed by Michal Sedlák</span>
         </footer>
     </body>
 </html>
