@@ -146,6 +146,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </article>
             <aside class="col-2"></aside>
         </section>
+        <footer class="row m-5">
+
+        </footer>
     </div>
 </body>
 </html>

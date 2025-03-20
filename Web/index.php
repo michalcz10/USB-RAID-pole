@@ -69,5 +69,8 @@ if (empty($_SESSION)) {
             <aside class="col">
             </aside>
         </section>
+        <footer class="row m-5">
+
+        </footer>
     </body>
 </html>

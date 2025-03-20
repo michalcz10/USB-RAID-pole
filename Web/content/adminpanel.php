@@ -194,6 +194,9 @@ $result = $conn->query("SELECT uname, admin, defPath, delPer, downPer, upPer FRO
         </article>
         <aside class="col-2"></aside>
     </section>
+    <footer class="row m-5">
+
+    </footer>
 </div>
 </body>
 </html>
