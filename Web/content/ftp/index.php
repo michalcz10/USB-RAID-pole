@@ -39,7 +39,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="../../css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <script src="../../js/bootstrap.bundle.js"></script>
+    <link rel="stylesheet" href="css/inde    <script src="../../js/bootstrap.bundle.js"></script>
     <style>
     html, body {
         height: 100%;
@@ -318,53 +318,53 @@
 
                     foreach ($files as $file) : ?>
                         <tr>
-                            <td>
-                                <?php
-								//getting file extension
-                                $fileExtension = pathinfo($file, PATHINFO_EXTENSION);
-								$isImage = in_array($fileExtension, $imageExtensions);
-								$isVideo = in_array($fileExtension, $videoExtensions);
-								$isMedia = $isImage || $isVideo;
-								$isEditable = in_array($fileExtension, $editableExtensions);
-								?>
-								<tr>
-									<td>
-										<?php if ($isMedia): ?>
-											<a class="text-info-emphasis" href="view.php?file=<?= urlencode($currentPath . '/' . $file) ?>">
-												<?= htmlspecialchars($file) ?>
-											</a>
-											<?php if ($isImage): ?>
-												<span class="badge bg-success rounded-pill">Image</span>
-											<?php elseif ($isVideo): ?>
-												<span class="badge bg-primary rounded-pill">Video</span>
-											<?php endif; ?>
-										<?php elseif ($isEditable): ?>
-											<a class="text-warning-emphasis" href="open.php?file=<?= urlencode($currentPath . '/' . $file) ?>">
-												<?= htmlspecialchars($file) ?>
-											</a>
-											<span class="badge bg-secondary rounded-pill"><?= htmlspecialchars($fileExtension) ?></span>
-										<?php else: ?>
-											<?= htmlspecialchars($file) ?>
-											<span class="badge bg-light text-dark rounded-pill"><?= htmlspecialchars($fileExtension) ?></span>
-										<?php endif; ?>
-									</td>
-									<td>
-										<?php if (isset($_SESSION["delPer"]) && $_SESSION["delPer"] == true) : ?>
-											<form method="POST" action="delete.php" style="display:inline;">
-												<input type="hidden" name="delete" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
-												<button type="submit" class="btn btn-danger" onclick="confirmDelete(event)">Delete</button>
-											</form>
-										<?php endif; ?>
+                            <?php
+                            //getting file extension
+                            $fileExtension = pathinfo($file, PATHINFO_EXTENSION);
+                            $isImage = in_array($fileExtension, $imageExtensions);
+                            $isVideo = in_array($fileExtension, $videoExtensions);
+                            $isMedia = $isImage || $isVideo;
+                            $isEditable = in_array($fileExtension, $editableExtensions);
+                            ?>
+                            <tr>
+                                <td>
+                                    <?php if ($isMedia): ?>
+                                        <a class="text-info-emphasis" href="view.php?file=<?= urlencode($currentPath . '/' . $file) ?>">
+                                            <?= htmlspecialchars($file) ?>
+                                        </a>
+                                        <?php if ($isImage): ?>
+                                            <span class="badge bg-success rounded-pill">Image</span>
+                                        <?php elseif ($isVideo): ?>
+                                            <span class="badge bg-primary rounded-pill">Video</span>
+                                        <?php endif; ?>
+                                    <?php elseif ($isEditable): ?>
+                                        <a class="text-warning-emphasis" href="open.php?file=<?= urlencode($currentPath . '/' . $file) ?>">
+                                            <?= htmlspecialchars($file) ?>
+                                        </a>
+                                        <span class="badge bg-secondary rounded-pill"><?= htmlspecialchars($fileExtension) ?></span>
+                                    <?php else: ?>
+                                        <?= htmlspecialchars($file) ?>
+                                        <span class="badge bg-light text-dark rounded-pill"><?= htmlspecialchars($fileExtension) ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (isset($_SESSION["delPer"]) && $_SESSION["delPer"] == true) : ?>
+                                        <form method="POST" action="delete.php" style="display:inline;">
+                                            <input type="hidden" name="delete" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
+                                            <button type="submit" class="btn btn-danger" onclick="confirmDelete(event)">Delete</button>
+                                        </form>
+                                    <?php endif; ?>
 
-										<?php if (isset($_SESSION["downPer"]) && $_SESSION["downPer"] == true) : ?>
-											<form method="POST" action="download.php" style="display:inline;">
-												<input type="hidden" name="file" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
-												<button type="submit" class="btn btn-success">Download</button>
-											</form>
-										<?php endif; ?>
-									</td>
-								</tr>
-							<?php endforeach; ?>
+                                    <?php if (isset($_SESSION["downPer"]) && $_SESSION["downPer"] == true) : ?>
+                                        <form method="POST" action="download.php" style="display:inline;">
+                                            <input type="hidden" name="file" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
+                                            <button type="submit" class="btn btn-success">Download</button>
+                                        </form>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
@@ -673,5 +673,3 @@
         });
     });
     </script>
-</body>
-</html>
