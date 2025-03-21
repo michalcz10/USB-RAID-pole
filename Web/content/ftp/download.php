@@ -135,8 +135,10 @@ try {
         }
     }
     
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['file'])) {
-        $file = $_POST['file'];
+    if (($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['file'])) ||
+        ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['file']))) {
+        
+        $file = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST['file'] : $_GET['file'];
         file_put_contents($logFile, "Requested file: $file\n", FILE_APPEND);
         
         // Make sure the file path exists on SFTP server
