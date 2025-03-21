@@ -26,6 +26,10 @@
     }
 
     $items = $sftp->nlist();
+	
+	$imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
+	$videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
+	$editableExtensions = ['txt', 'html', 'css', 'js', 'php', 'xml', 'json', 'md', 'csv', 'log', 'ini', 'conf', 'sh', 'bat', 'py', 'rb', 'java', 'c', 'cpp', 'h', 'hpp'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -316,33 +320,51 @@
                         <tr>
                             <td>
                                 <?php
-                                $editableExtensions = ['txt', 'html', 'css', 'js', 'php', 'xml', 'json', 'md', 'csv', 'log', 'ini', 'conf', 'sh', 'bat', 'py', 'rb', 'java', 'c', 'cpp', 'h', 'hpp'];
+								//getting file extension
                                 $fileExtension = pathinfo($file, PATHINFO_EXTENSION);
+								$isImage = in_array($fileExtension, $imageExtensions);
+								$isVideo = in_array($fileExtension, $videoExtensions);
+								$isMedia = $isImage || $isVideo;
+								$isEditable = in_array($fileExtension, $editableExtensions);
+								?>
+								<tr>
+									<td>
+										<?php if ($isMedia): ?>
+											<a class="text-info-emphasis" href="view.php?file=<?= urlencode($currentPath . '/' . $file) ?>">
+												<?= htmlspecialchars($file) ?>
+											</a>
+											<?php if ($isImage): ?>
+												<span class="badge bg-success rounded-pill">Image</span>
+											<?php elseif ($isVideo): ?>
+												<span class="badge bg-primary rounded-pill">Video</span>
+											<?php endif; ?>
+										<?php elseif ($isEditable): ?>
+											<a class="text-warning-emphasis" href="open.php?file=<?= urlencode($currentPath . '/' . $file) ?>">
+												<?= htmlspecialchars($file) ?>
+											</a>
+											<span class="badge bg-secondary rounded-pill"><?= htmlspecialchars($fileExtension) ?></span>
+										<?php else: ?>
+											<?= htmlspecialchars($file) ?>
+											<span class="badge bg-light text-dark rounded-pill"><?= htmlspecialchars($fileExtension) ?></span>
+										<?php endif; ?>
+									</td>
+									<td>
+										<?php if (isset($_SESSION["delPer"]) && $_SESSION["delPer"] == true) : ?>
+											<form method="POST" action="delete.php" style="display:inline;">
+												<input type="hidden" name="delete" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
+												<button type="submit" class="btn btn-danger" onclick="confirmDelete(event)">Delete</button>
+											</form>
+										<?php endif; ?>
 
-                                if (in_array(strtolower($fileExtension), $editableExtensions)) : ?>
-                                    <a class="text-warning-emphasis" href="open.php?file=<?= urlencode($currentPath . '/' . $file) ?>"><?= htmlspecialchars($file) ?></a>
-                                    <span class="badge bg-secondary rounded-pill"><?= htmlspecialchars($fileExtension) ?></span>
-                                <?php else : ?>
-                                    <?= htmlspecialchars($file) ?>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if (isset($_SESSION["delPer"]) && $_SESSION["delPer"] == true) : ?>
-                                    <form method="POST" action="delete.php" style="display:inline;">
-                                        <input type="hidden" name="delete" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
-                                        <button type="submit" class="btn btn-danger" onclick="confirmDelete(event)">Delete</button>
-                                    </form>
-                                <?php endif; ?>
-
-                                <?php if (isset($_SESSION["downPer"]) && $_SESSION["downPer"] == true) : ?>
-                                    <form method="POST" action="download.php" style="display:inline;">
-                                        <input type="hidden" name="file" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
-                                        <button type="submit" class="btn btn-success">Download</button>
-                                    </form>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
+										<?php if (isset($_SESSION["downPer"]) && $_SESSION["downPer"] == true) : ?>
+											<form method="POST" action="download.php" style="display:inline;">
+												<input type="hidden" name="file" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
+												<button type="submit" class="btn btn-success">Download</button>
+											</form>
+										<?php endif; ?>
+									</td>
+								</tr>
+							<?php endforeach; ?>
                 </tbody>
             </table>
         </div>
