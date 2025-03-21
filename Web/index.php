@@ -86,7 +86,7 @@ if (empty($_SESSION)) {
     </header>
 
     <main>
-        <section class="row">
+        <section class="row m-3">
             <article class="col border border-2 border-primary rounded p-2 fixed">
                 <form action="content/login.php" method="post">
                     <div class="mb-3">
