@@ -247,12 +247,7 @@ function createFile() {
     };
     xhr.send(formData);
 }
-
-// Theme toggling functionality
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize currentPath from PHP
-    window.currentPath = document.querySelector('h4').textContent.replace('Current Path: ', '').trim();
-    
     const themeToggle = document.getElementById('themeToggle');
     const html = document.documentElement;
     const themeText = document.getElementById('themeText');

@@ -137,6 +137,7 @@ unset($_SESSION['message_type']);
     <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/adminpanel.css">
     <script src="../js/bootstrap.bundle.js"></script>
     <script>
         function confirmDelete(uname) {
@@ -145,60 +146,6 @@ unset($_SESSION['message_type']);
             }
         }
     </script>
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-        }
-
-        .custom-container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            max-width: 60%;
-            margin: 0 auto;
-        }
-        section.row {
-            flex: 1;
-        }
-        @media (max-width: 1120px) {
-            .custom-container {
-                max-width: 90%;
-            }
-        }
-        .add-user-form {
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        .form-check {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            justify-content: flex-start;
-        }
-        .form-check-input {
-            margin-right: 10px;
-        }
-        .form-check-label {
-            margin-left: 0.5rem;
-        }
-        body {
-            min-width: 800px;
-        }
-        .hover-effect {
-            transition: opacity 0.3s ease;
-        }
-
-        .hover-effect:hover {
-            opacity: 0.8;
-        }
-        .theme-light .dark-logo {
-            display: none;
-        }
-        .theme-dark .light-logo {
-            display: none;
-        }
-    </style>
 </head>
 <body class="text-center">
 <div class="d-flex justify-content-end p-3">
@@ -303,48 +250,7 @@ unset($_SESSION['message_type']);
         </div>
     </footer>
         
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const themeToggle = document.getElementById('themeToggle');
-            const html = document.documentElement;
-            const themeText = document.getElementById('themeText');
-            const themeIcon = themeToggle.querySelector('.bi');
-            
-            function setTheme(theme) {
-                html.setAttribute('data-bs-theme', theme);
-                document.body.classList.remove('theme-light', 'theme-dark');
-                document.body.classList.add('theme-' + theme);
-                localStorage.setItem('theme', theme);
-                
-                if (theme === 'dark') {
-                    themeText.textContent = 'Light Mode';
-                    themeIcon.className = 'bi bi-sun';
-                    themeToggle.classList.remove('btn-dark');
-                    themeToggle.classList.add('btn-light');
-                } else {
-                    themeText.textContent = 'Dark Mode';
-                    themeIcon.className = 'bi bi-moon';
-                    themeToggle.classList.remove('btn-light');
-                    themeToggle.classList.add('btn-dark');
-                }
-            }
-            
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            if (savedTheme) {
-                setTheme(savedTheme);
-            } else {
-                setTheme(prefersDark ? 'dark' : 'light');
-            }
-            
-            themeToggle.addEventListener('click', function() {
-                const currentTheme = html.getAttribute('data-bs-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                setTheme(newTheme);
-            });
-        });
-    </script>
+    <script src="../js/theme.js"></script>
 </div>
 </body>
 </html>

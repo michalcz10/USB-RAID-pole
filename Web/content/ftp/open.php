@@ -62,62 +62,13 @@ $parentDir = dirname($filePath);
 <html lang="en">
 <head>
     <title>Edit File - <?= htmlspecialchars($fileName) ?></title>
-    <link rel="icon" href="../../img/favicon.ico" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="../../img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../../css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/open.css">
     <script src="../../js/bootstrap.bundle.js"></script>
-    <style>
-        .editor-container {
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            position: relative;
-        }
-        
-        #editor {
-            width: 100%;
-            min-height: 400px;
-            font-family: monospace;
-            padding: 10px;
-            white-space: pre;
-            overflow: auto;
-            resize: vertical;
-            tab-size: 4;
-            -moz-tab-size: 4;
-            padding-left: 55px; /* Make room for line numbers */
-        }
-        
-        .line-numbers {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 45px;
-            text-align: right;
-            padding: 10px 5px 10px 0;
-            border-right: 1px solid #ccc;
-            background-color: transparent;
-            color: #999;
-            user-select: none;
-            font-family: monospace;
-            overflow: hidden;
-            z-index: 1;
-        }
-        
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .readonly-notice {
-            color: #dc3545;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-    </style>
 </head>
 <body>
 <div class="d-flex justify-content-end p-3">
@@ -167,49 +118,7 @@ $parentDir = dirname($filePath);
             </form>
         <?php endif; ?>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const themeToggle = document.getElementById('themeToggle');
-            const html = document.documentElement;
-            const themeText = document.getElementById('themeText');
-            const themeIcon = themeToggle.querySelector('.bi');
-            
-            function setTheme(theme) {
-                html.setAttribute('data-bs-theme', theme);
-                document.body.classList.remove('theme-light', 'theme-dark');
-                document.body.classList.add('theme-' + theme);
-                localStorage.setItem('theme', theme);
-                
-                if (theme === 'dark') {
-                    themeText.textContent = 'Light Mode';
-                    themeIcon.className = 'bi bi-sun';
-                    themeToggle.classList.remove('btn-dark');
-                    themeToggle.classList.add('btn-light');
-                } else {
-                    themeText.textContent = 'Dark Mode';
-                    themeIcon.className = 'bi bi-moon';
-                    themeToggle.classList.remove('btn-light');
-                    themeToggle.classList.add('btn-dark');
-                }
-            }
-            
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            if (savedTheme) {
-                setTheme(savedTheme);
-            } else {
-                setTheme(prefersDark ? 'dark' : 'light');
-            }
-            
-            themeToggle.addEventListener('click', function() {
-                const currentTheme = html.getAttribute('data-bs-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                setTheme(newTheme);
-            });
-        });
-    </script>
-
+    <script src="../../js/theme.js"></script>
     <script>
         // Function to update line numbers
         function updateLineNumbers() {

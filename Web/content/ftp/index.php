@@ -27,17 +27,19 @@
 
     $items = $sftp->nlist();
 	
-	$imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
-	$videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
-	$editableExtensions = ['txt', 'html', 'css', 'js', 'php', 'xml', 'json', 'md', 'csv', 'log', 'ini', 'conf', 'sh', 'bat', 'py', 'rb', 'java', 'c', 'cpp', 'h', 'hpp'];
+	// In the PHP section near the top (around line 20)
+    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
+    $videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
+    $audioExtensions = ['mp3', 'wav', 'm4a', 'flac', 'aac']; // Added audio extensions
+    $editableExtensions = ['txt', 'html', 'css', 'js', 'php', 'xml', 'json', 'md', 'csv', 'log', 'ini', 'conf', 'sh', 'bat', 'py', 'rb', 'java', 'c', 'cpp', 'h', 'hpp'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <title>FTP</title>
-    <link rel="icon" href="../../img/favicon.ico" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="../../img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../../css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/index.css">
@@ -190,24 +192,28 @@
 
                     foreach ($files as $file) : ?>
                         <?php
-                        // Getting file extension
+                        
                         $fileExtension = pathinfo($file, PATHINFO_EXTENSION);
                         $isImage = in_array($fileExtension, $imageExtensions);
                         $isVideo = in_array($fileExtension, $videoExtensions);
-                        $isMedia = $isImage || $isVideo;
+                        $isAudio = in_array($fileExtension, $audioExtensions);
+                        $isMedia = $isImage || $isVideo || $isAudio;
                         $isEditable = in_array($fileExtension, $editableExtensions);
                         ?>
                         <tr>
                             <td>
+                                
                                 <?php if ($isMedia): ?>
-                                    <a class="text-info-emphasis" href="view.php?file=<?= urlencode($currentPath . '/' . $file) ?>">
-                                        <?= htmlspecialchars($file) ?>
-                                    </a>
-                                    <?php if ($isImage): ?>
-                                        <span class="badge bg-success rounded-pill">Image</span>
-                                    <?php elseif ($isVideo): ?>
-                                        <span class="badge bg-primary rounded-pill">Video</span>
-                                    <?php endif; ?>
+                                <a class="text-info-emphasis" href="view.php?file=<?= urlencode($currentPath . '/' . $file) ?>">
+                                    <?= htmlspecialchars($file) ?>
+                                </a>
+                                <?php if ($isImage): ?>
+                                    <span class="badge bg-success rounded-pill">Image</span>
+                                <?php elseif ($isVideo): ?>
+                                    <span class="badge bg-primary rounded-pill">Video</span>
+                                <?php elseif ($isAudio): ?>
+                                    <span class="badge bg-info rounded-pill">Audio</span>
+                                <?php endif; ?>
                                 <?php elseif ($isEditable): ?>
                                     <a class="text-warning-emphasis" href="open.php?file=<?= urlencode($currentPath . '/' . $file) ?>">
                                         <?= htmlspecialchars($file) ?>

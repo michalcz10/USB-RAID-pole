@@ -90,65 +90,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/changepassword.css">
     <script src="../js/bootstrap.bundle.js"></script>
-    <style>
-        .container-fluid {
-            width: 100%;
-            padding-right: 15px;
-            padding-left: 15px;
-            margin-right: auto;
-            margin-left: auto;
-        }
-        
-        .content-section {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .change-password-form {
-            max-width: 100%;
-            margin: 0 auto;
-        }
-        
-        @media (min-width: 768px) {
-            .change-password-form {
-                max-width: 400px;
-            }
-        }
-        
-        .hover-effect {
-            transition: opacity 0.3s ease;
-        }
-
-        .hover-effect:hover {
-            opacity: 0.8;
-        }
-        
-        .theme-light .dark-logo {
-            display: none;
-        }
-        
-        .theme-dark .light-logo {
-            display: none;
-        }
-        
-        .btn-group-responsive {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: center;
-        }
-        
-        h1 {
-            font-size: 1.8rem;
-        }
-        
-        @media (min-width: 576px) {
-            h1 {
-                font-size: 2.5rem;
-            }
-        }
-    </style>
 </head>
 <body class="text-center">
     <div class="d-flex justify-content-end p-3">
@@ -214,48 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </footer>
         
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const themeToggle = document.getElementById('themeToggle');
-                const html = document.documentElement;
-                const themeText = document.getElementById('themeText');
-                const themeIcon = themeToggle.querySelector('.bi');
-                
-                function setTheme(theme) {
-                    html.setAttribute('data-bs-theme', theme);
-                    document.body.classList.remove('theme-light', 'theme-dark');
-                    document.body.classList.add('theme-' + theme);
-                    localStorage.setItem('theme', theme);
-                    
-                    if (theme === 'dark') {
-                        themeText.textContent = 'Light Mode';
-                        themeIcon.className = 'bi bi-sun';
-                        themeToggle.classList.remove('btn-dark');
-                        themeToggle.classList.add('btn-light');
-                    } else {
-                        themeText.textContent = 'Dark Mode';
-                        themeIcon.className = 'bi bi-moon';
-                        themeToggle.classList.remove('btn-light');
-                        themeToggle.classList.add('btn-dark');
-                    }
-                }
-                
-                const savedTheme = localStorage.getItem('theme');
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                
-                if (savedTheme) {
-                    setTheme(savedTheme);
-                } else {
-                    setTheme(prefersDark ? 'dark' : 'light');
-                }
-                
-                themeToggle.addEventListener('click', function() {
-                    const currentTheme = html.getAttribute('data-bs-theme');
-                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                    setTheme(newTheme);
-                });
-            });
-        </script>
+        <script src="../js/theme.js"></script>
     </div>
 </body>
 </html>
