@@ -3,7 +3,7 @@ session_start();
 
 // Check if user is logged in
 if (!isset($_SESSION['uname'])) {
-    header("location: ../index.html");
+    header("location: ../index.php");
     exit();
 }
 

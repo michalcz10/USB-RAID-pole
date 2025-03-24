@@ -2,7 +2,7 @@
 session_start();
 if (empty($_SESSION['admin']) || $_SESSION['admin'] !== true) {
     session_destroy();
-    header("location: ../index.html");
+    header("location: ../index.php");
     exit();
 }
 
