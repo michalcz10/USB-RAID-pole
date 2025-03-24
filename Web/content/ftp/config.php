@@ -6,9 +6,9 @@ use phpseclib3\Net\SFTP;
 $defPath = $_SESSION['defPath'] ?? '/';
 
 // SFTP Configuration
-$host = 'IP ADDRESS';
-$username = 'USERNAME';
-$password = 'PASSWD';
+$host = 'localhost';
+$username = 'dataacc';
+$password = 'micalis1235';
 $defaultPath = $defPath;
 
 // Initialize SFTP connection

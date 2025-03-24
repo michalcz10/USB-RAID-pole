@@ -20,58 +20,11 @@ if (empty($_SESSION)) {
     <title>Login</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/index.css">
     <script src="js/bootstrap.bundle.js"></script>
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-        }
-
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            padding-top: 7%;
-        }
-
-        .fixed {
-            -ms-flex: 0 0 300px;
-            flex: 0 0 300px;
-            min-width: 300px;
-        }
-
-        .hover-effect {
-            transition: opacity 0.3s ease;
-        }
-
-        .hover-effect:hover {
-            opacity: 0.8;
-        }
-
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        .theme-light .dark-logo {
-            display: none;
-        }
-
-        .theme-dark .light-logo {
-            display: none;
-        }
-    </style>
 </head>
 <body class="container-fluid text-center">
     <div class="d-flex justify-content-end p-3">
@@ -121,47 +74,6 @@ if (empty($_SESSION)) {
         </div>
     </footer>
     
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const themeToggle = document.getElementById('themeToggle');
-            const html = document.documentElement;
-            const themeText = document.getElementById('themeText');
-            const themeIcon = themeToggle.querySelector('.bi');
-            
-            function setTheme(theme) {
-                html.setAttribute('data-bs-theme', theme);
-                document.body.classList.remove('theme-light', 'theme-dark');
-                document.body.classList.add('theme-' + theme);
-                localStorage.setItem('theme', theme);
-                
-                if (theme === 'dark') {
-                    themeText.textContent = 'Light Mode';
-                    themeIcon.className = 'bi bi-sun';
-                    themeToggle.classList.remove('btn-dark');
-                    themeToggle.classList.add('btn-light');
-                } else {
-                    themeText.textContent = 'Dark Mode';
-                    themeIcon.className = 'bi bi-moon';
-                    themeToggle.classList.remove('btn-light');
-                    themeToggle.classList.add('btn-dark');
-                }
-            }
-            
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            if (savedTheme) {
-                setTheme(savedTheme);
-            } else {
-                setTheme(prefersDark ? 'dark' : 'light');
-            }
-            
-            themeToggle.addEventListener('click', function() {
-                const currentTheme = html.getAttribute('data-bs-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                setTheme(newTheme);
-            });
-        });
-    </script>
+    <script src="js/theme.js"></script>
 </body>
 </html>
