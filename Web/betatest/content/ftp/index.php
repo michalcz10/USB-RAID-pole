@@ -137,6 +137,7 @@
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Size</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -161,13 +162,13 @@
 
                     if ($currentPath !== $defaultPath) : ?>
                         <tr>
-                            <td colspan="2"><a class="text-danger" href="?path=<?= urlencode(dirname($currentPath)) ?>"><b>.. (Go Back)</b></a></td>
+                            <td colspan="3"><a class="text-danger" href="?path=<?= urlencode(dirname($currentPath)) ?>"><b>.. (Go Back)</b></a></td>
                         </tr>
                     <?php endif;
 
                     foreach ($directories as $directory) : ?>
                         <tr>
-                            <td>
+                            <td colspan="2">
                                 <a href="?path=<?= urlencode($currentPath . '/' . $directory) ?>"><?= htmlspecialchars($directory) ?>/</a>
                             </td>
                             <td>
@@ -223,6 +224,9 @@
                                 <?php endif; ?>
                             </td>
                             <td>
+                                <span class="text"><?= formatBytes($sftp->stat($currentPath . '/' . $file)['size']) ?></span>
+                            </td>
+                            <td>
                                 <?php if (isset($_SESSION["delPer"]) && $_SESSION["delPer"] == true) : ?>
                                     <form method="POST" action="delete.php" style="display:inline;">
                                         <input type="hidden" name="delete" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
@@ -265,3 +269,14 @@
     <script src="js/index.js"></script>
 </body>
 </html>
+
+<?php
+function formatBytes($bytes, $precision = 2) {
+    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    $bytes = max($bytes, 0);
+    $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+    $pow = min($pow, count($units) - 1);
+    $bytes /= (1 << (10 * $pow));
+    return round($bytes, $precision) . ' ' . $units[$pow];
+}
+?>
