@@ -1,5 +1,6 @@
 <?php
-// Set error reporting for debugging
+// Include this at the top to see potential errors
+// Comment out in production
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -14,16 +15,13 @@ if(!isset($_SESSION['uname'])){
 require 'config.php';
 $sftp = initializeSFTP($host, $username, $password);
 
-// Get the file path from GET parameter
 $filePath = isset($_GET['file']) ? $_GET['file'] : '';
 
-// Initialize variables
 $content = '';
 $fileName = basename($filePath);
 $extension = pathinfo($fileName, PATHINFO_EXTENSION);
 $editable = false;
 
-// List of editable file extensions
 $editableExtensions = ['txt', 'html', 'css', 'js', 'php', 'xml', 'json', 'md', 'csv', 'log', 'ini', 'conf', 'sh', 'bat', 'py', 'rb', 'java', 'c', 'cpp', 'h', 'hpp'];
 
 if (!empty($filePath) && $sftp->file_exists($filePath) && !$sftp->is_dir($filePath)) {
@@ -33,7 +31,6 @@ if (!empty($filePath) && $sftp->file_exists($filePath) && !$sftp->is_dir($filePa
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['content']) && isset($_SESSION["upPer"]) && $_SESSION["upPer"] == true) {
             $newContent = $_POST['content'];
 
-            // Write content directly to the SFTP server
             if ($sftp->put($filePath, $newContent)) {
                 $saveSuccess = true;
             } else {
@@ -41,7 +38,6 @@ if (!empty($filePath) && $sftp->file_exists($filePath) && !$sftp->is_dir($filePa
             }
         }
         
-        // Get file contents directly from the SFTP server
         $content = $sftp->get($filePath);
         if ($content === false) {
             $error = "Failed to read file contents.";
@@ -53,7 +49,6 @@ if (!empty($filePath) && $sftp->file_exists($filePath) && !$sftp->is_dir($filePa
     $error = "File not found or is a directory.";
 }
 
-// Determine if we should show line numbers for code files
 $showLineNumbers = in_array(strtolower($extension), ['php', 'js', 'html', 'css', 'py', 'java', 'c', 'cpp', 'h', 'hpp', 'rb', 'sh', 'xml', 'json']);
 
 $parentDir = dirname($filePath);
@@ -120,12 +115,11 @@ $parentDir = dirname($filePath);
     </div>
     <script src="../../js/theme.js"></script>
     <script>
-        // Function to update line numbers
         function updateLineNumbers() {
             const editor = document.getElementById('editor');
             const lineNumbers = document.getElementById('lineNumbers');
             
-            if (!lineNumbers) return; // Skip if line numbers are not shown
+            if (!lineNumbers) return;
             
             const lines = editor.value.split('\n');
             const lineCount = lines.length;
@@ -136,68 +130,55 @@ $parentDir = dirname($filePath);
             }
             
             lineNumbers.innerHTML = html;
-            
-            // Update height and scroll position immediately
+
             syncLineNumbersHeight();
             lineNumbers.scrollTop = editor.scrollTop;
         }
         
-        // Function to sync line numbers height with editor height
         function syncLineNumbersHeight() {
             const editor = document.getElementById('editor');
             const lineNumbers = document.getElementById('lineNumbers');
             
             if (!lineNumbers || !editor) return;
-            
-            // Set line numbers height to match the editor's client height (visible area)
+
             lineNumbers.style.height = editor.clientHeight + 'px';
         }
         
-        // Initialize line numbers and set up event handlers
         document.addEventListener('DOMContentLoaded', function() {
             const editor = document.getElementById('editor');
             const lineNumbers = document.getElementById('lineNumbers');
             
             if (editor && lineNumbers) {
-                // Force immediate rendering of line numbers
                 setTimeout(() => {
                     updateLineNumbers();
                     syncLineNumbersHeight();
                 }, 0);
                 
-                // Update line numbers on input
                 editor.addEventListener('input', updateLineNumbers);
-                
-                // Handle tab key for indentation
+
                 editor.addEventListener('keydown', function(e) {
                     if (e.key === 'Tab') {
                         e.preventDefault();
                         
                         const start = this.selectionStart;
                         const end = this.selectionEnd;
-                        
-                        // Insert tab at cursor position
+
                         this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
-                        
-                        // Move cursor after tab
+
                         this.selectionStart = this.selectionEnd = start + 4;
-                        
-                        // Update line numbers
+
                         updateLineNumbers();
                     }
                 });
-                
-                // Handle scroll sync between editor and line numbers
+
                 editor.addEventListener('scroll', function() {
                     if (lineNumbers) {
                         lineNumbers.scrollTop = this.scrollTop;
                     }
                 });
-                
-                // Ensure height sync happens on multiple events
+
                 editor.addEventListener('mouseup', syncLineNumbersHeight);
-                
-                // Use mutation observer to detect style changes (like height)
+
                 const observer = new MutationObserver(function(mutations) {
                     syncLineNumbersHeight();
                 });
@@ -206,15 +187,14 @@ $parentDir = dirname($filePath);
                     attributes: true, 
                     attributeFilter: ['style'] 
                 });
-                
-                // For browsers that support ResizeObserver
+
                 if (typeof ResizeObserver === 'function') {
                     const resizeObserver = new ResizeObserver(() => {
                         syncLineNumbersHeight();
                     });
                     resizeObserver.observe(editor);
                 } else {
-                    // Fallback for browsers without ResizeObserver
+
                     window.addEventListener('resize', syncLineNumbersHeight);
                 }
             }

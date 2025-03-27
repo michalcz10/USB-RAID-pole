@@ -7,7 +7,8 @@ if(!isset($_SESSION['uname'])){
     exit;
 }
 
-// Include error reporting for development
+// Include this at the top to see potential errors
+// Comment out in production
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 ini_set('memory_limit', '512M');
@@ -23,39 +24,32 @@ $filePath = $_GET['file'];
 $fileName = basename($filePath);
 $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-// Check if the file exists
 if (!$sftp->stat($filePath)) {
     die("File not found: $filePath");
 }
 
-// Define supported file types
 $imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
 $videoTypes = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
-$audioTypes = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac']; // Added audio types
+$audioTypes = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac'];
 
-// Check if file type is supported
 $isImage = in_array($fileExtension, $imageTypes);
 $isVideo = in_array($fileExtension, $videoTypes);
-$isAudio = in_array($fileExtension, $audioTypes); // Added audio check
+$isAudio = in_array($fileExtension, $audioTypes);
 
 if (!$isImage && !$isVideo && !$isAudio) {
     die("Unsupported file type");
 }
 
-// Get file size from SFTP
 $fileSize = $sftp->stat($filePath)['size'];
 
-// MIME type mapping for all supported formats
 $mimeMap = [
-    // Video types
     'mp4' => 'video/mp4',
     'webm' => 'video/mp4',
     'ogg' => 'video/mp4',
     'mov' => 'video/mp4',
     'avi' => 'video/mp4',
     'mkv' => 'video/mp4',
-    
-    // Image types
+
     'jpg' => 'image/jpeg',
     'jpeg' => 'image/jpeg',
     'png' => 'image/png',
@@ -63,8 +57,7 @@ $mimeMap = [
     'bmp' => 'image/bmp',
     'webp' => 'image/webp',
     'svg' => 'image/svg+xml',
-    
-    // Audio types
+
     'mp3' => 'audio/mpeg',
     'wav' => 'audio/wav',
     'm4a' => 'audio/mp4',
@@ -74,18 +67,13 @@ $mimeMap = [
 
 $mimeType = isset($mimeMap[$fileExtension]) ? $mimeMap[$fileExtension] : 'application/octet-stream';
 
-// If direct streaming is requested
 if (isset($_GET['stream'])) {
-    // Create a temporary file to cache a portion of the content
-    // This is more reliable than direct streaming with some SFTP libraries
     $tempFile = tempnam(sys_get_temp_dir(), 'media_');
-    
-    // Get file range information
+
     $start = 0;
     $end = $fileSize - 1;
     $length = $fileSize;
-    
-    // Handle range requests for video seeking
+
     if (isset($_SERVER['HTTP_RANGE'])) {
         $rangeHeader = $_SERVER['HTTP_RANGE'];
         $matches = [];
@@ -97,72 +85,54 @@ if (isset($_GET['stream'])) {
             }
             
             $length = $end - $start + 1;
-            
-            // Return 206 Partial Content
+
             header('HTTP/1.1 206 Partial Content');
             header('Content-Range: bytes ' . $start . '-' . $end . '/' . $fileSize);
         }
     }
-    
-    // Set appropriate headers
+
     header("Content-Type: $mimeType");
     header("Accept-Ranges: bytes");
     header("Content-Length: $length");
-    
-    // Clear any output buffering
+
     while (ob_get_level()) {
         ob_end_clean();
     }
     
 
-    $chunkSize = 8 * 1024 * 1024; // 4MB chunks for better performance
+    $chunkSize = 8 * 1024 * 1024; // 8MB chunks for better performance
 
-    
-    // For partial requests, adjust start position and length
+
     $currentPosition = $start;
     $bytesRemaining = $length;
-    
-    // Create a resource handle for the temporary file
+
     $tempHandle = fopen($tempFile, 'w+');
-    
-    // Process the file in chunks
+
     while ($bytesRemaining > 0) {
-        // Determine the size of this chunk
         $readSize = min($chunkSize, $bytesRemaining);
         
-        // Create a temporary file for this chunk
         $chunkTemp = tempnam(sys_get_temp_dir(), 'chunk_');
         
-        // Command to get a specific portion of the file
         if ($sftp->get($filePath, $chunkTemp, $currentPosition, $readSize)) {
-            // Read the chunk data
             $chunkData = file_get_contents($chunkTemp);
-            
-            // Write to output
             echo $chunkData;
             
-            // Clean up this chunk file
             unlink($chunkTemp);
             
-            // Update counters
             $bytesRemaining -= strlen($chunkData);
             $currentPosition += strlen($chunkData);
-            
-            // Flush output
+
             flush();
         } else {
-            // Error reading from SFTP
             error_log("SFTP reading error at position $currentPosition");
             break;
         }
         
-        // Check if client is still connected
         if (connection_status() != CONNECTION_NORMAL) {
             break;
         }
     }
-    
-    // Clean up
+
     fclose($tempHandle);
     if (file_exists($tempFile)) {
         unlink($tempFile);
@@ -267,7 +237,6 @@ if (isset($_GET['stream'])) {
 </html>
 
 <?php
-// Helper function to format bytes
 function formatBytes($bytes, $precision = 2) {
     $units = ['B', 'KB', 'MB', 'GB', 'TB'];
     $bytes = max($bytes, 0);

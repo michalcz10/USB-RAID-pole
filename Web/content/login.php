@@ -41,7 +41,7 @@ if (isset($_POST['uname'], $_POST['pswd'])) {
             $upPer = $row["upPer"];
 
             if (password_verify($pswd, $hash)) {
-                // Login successful
+                // Login successful - store info in session
                 $_SESSION['uname'] = $uname;
                 $_SESSION['admin'] = $admin;
                 $_SESSION['defPath'] = $defPath;
@@ -52,8 +52,6 @@ if (isset($_POST['uname'], $_POST['pswd'])) {
                 break;
             }
         }
-
-        // Free the result set and close the statement
         $result->free_result();
         $stmt->close();
         $conn->close();

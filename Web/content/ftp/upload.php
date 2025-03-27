@@ -1,5 +1,6 @@
 <?php
-// For debugging - comment out in production
+// Include this at the top to see potential errors
+// Comment out in production
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -8,34 +9,26 @@ use phpseclib3\Net\SFTP;
 
 $sftp = initializeSFTP($host, $username, $password);
 
-// Get the current path from the POST data
 $currentPath = isset($_POST['currentPath']) ? normalizePath($_POST['currentPath']) : $defaultPath;
 
-// Ensure the path is within the allowed directory
 if (strpos($currentPath, $defaultPath) !== 0) {
     $currentPath = $defaultPath;
 }
 
-// Create a directory recursively
 function createDirectoryRecursive($sftp, $path) {
-    // Path already exists
     if ($sftp->is_dir($path)) {
         return true;
     }
     
-    // Create parent directory if it doesn't exist
     $parent = dirname($path);
     if ($parent != '/' && !$sftp->is_dir($parent)) {
         createDirectoryRecursive($sftp, $parent);
     }
     
-    // Create the directory
     return $sftp->mkdir($path, 0755);
 }
 
-// Check if we have valid file uploads
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // First, create any directories needed
     if (isset($_POST['create_dirs'])) {
         $directories = json_decode($_POST['create_dirs'], true);
         
@@ -47,19 +40,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     
-    // Check if files array exists and is not empty
     if (!isset($_FILES['files']) || empty($_FILES['files']['name'][0])) {
         echo "No files received or file size exceeds PHP limits.";
         http_response_code(400);
         exit;
     }
     
-    // Check for upload errors
     if ($_FILES['files']['error'][0] !== 0) {
         $error = $_FILES['files']['error'][0];
         $errorMessage = "Upload error code: $error";
-        
-        // Translate error codes to human-readable messages
+
         switch ($error) {
             case UPLOAD_ERR_INI_SIZE:
                 $errorMessage = "File exceeds upload_max_filesize directive in php.ini";
@@ -97,18 +87,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $fileName = $_FILES['files']['name'][$index];
         $relativePath = isset($_POST['paths']) && isset($_POST['paths'][$index]) ? $_POST['paths'][$index] : '';
-        
-        // If we have a relative path from directory upload
+
         if (!empty($relativePath)) {
-            // Get just the filename from the relative path
             $fileName = basename($relativePath);
-            
-            // Get the directory part of the relative path
+
             $dirPart = dirname($relativePath);
             if ($dirPart !== '.' && $dirPart !== '') {
                 $remoteDirPath = $currentPath . '/' . $dirPart;
-                
-                // Create the directory if it doesn't exist
+
                 if (!$sftp->is_dir($remoteDirPath)) {
                     createDirectoryRecursive($sftp, $remoteDirPath);
                 }
@@ -120,8 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $remotePath = $currentPath . '/' . $fileName;
         }
-        
-        // Upload the file
+
         if ($sftp->put($remotePath, $tmpName, SFTP::SOURCE_LOCAL_FILE)) {
             $uploadStatus[] = "Uploaded: " . ($relativePath ? $relativePath : $fileName);
             $anySuccess = true;
@@ -140,7 +125,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// If we reached here, no valid POST request was received
 echo "No files received or invalid request.";
 http_response_code(400);
 exit;

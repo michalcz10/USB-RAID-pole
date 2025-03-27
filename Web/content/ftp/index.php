@@ -20,17 +20,15 @@
         $currentPath = $defaultPath;
     }
     
-    // Check SFTP connection before using it
     if (!$sftp->chdir($currentPath)) {
         die("Failed to navigate to the selected folder: $currentPath");
     }
 
     $items = $sftp->nlist();
 	
-	// In the PHP section near the top (around line 20)
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
     $videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
-    $audioExtensions = ['mp3', 'wav', 'm4a', 'flac', 'aac']; // Added audio extensions
+    $audioExtensions = ['mp3', 'wav', 'm4a', 'flac', 'aac'];
     $editableExtensions = ['txt', 'html', 'css', 'js', 'php', 'xml', 'json', 'md', 'csv', 'log', 'ini', 'conf', 'sh', 'bat', 'py', 'rb', 'java', 'c', 'cpp', 'h', 'hpp'];
 ?>
 <!DOCTYPE html>

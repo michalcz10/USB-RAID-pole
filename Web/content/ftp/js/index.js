@@ -45,7 +45,6 @@ function processDroppedItems(items) {
         }
     }
     
-    // Function to read entries from a directory reader
     function readEntries(reader, path) {
         pendingItems++;
         reader.readEntries(entries => {
@@ -62,8 +61,7 @@ function processDroppedItems(items) {
             }
         });
     }
-    
-    // Process each dropped item
+
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
         if (item.kind !== 'file') continue;
@@ -73,8 +71,7 @@ function processDroppedItems(items) {
             handleEntry(entry);
         }
     }
-    
-    // If there are no items to process, show an error
+
     if (pendingItems === 0 && allFiles.length === 0) {
         alert('No valid files or directories found.');
     }
@@ -86,7 +83,6 @@ function handleFileSelect(event) {
 }
 
 function uploadFiles(files) {
-    // Validate files
     if (!files || files.length === 0) {
         alert('No files selected for upload.');
         return;
@@ -97,12 +93,10 @@ function uploadFiles(files) {
 
     let filesAdded = 0;
     let directories = new Set();
-    
-    // Track directories to create
+
     for (const file of files) {
         const relativePath = file.webkitRelativePath || '';
-        
-        // If there's a relative path, extract directories
+
         if (relativePath) {
             const parts = relativePath.split('/');
             let currentPath = '';
@@ -119,7 +113,6 @@ function uploadFiles(files) {
         filesAdded++;
     }
 
-    // Add directories to create
     if (directories.size > 0) {
         formData.append('create_dirs', JSON.stringify(Array.from(directories)));
     }
@@ -129,7 +122,6 @@ function uploadFiles(files) {
         return;
     }
 
-    // Show upload progress
     const uploadStatus = document.createElement('div');
     uploadStatus.className = 'alert alert-info';
     uploadStatus.textContent = 'Uploading files, please wait...';
@@ -137,15 +129,13 @@ function uploadFiles(files) {
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', 'upload.php', true);
-    
-    // Handle errors
+
     xhr.onerror = () => {
         uploadStatus.className = 'alert alert-danger';
         uploadStatus.textContent = 'Network error occurred during upload.';
         setTimeout(() => uploadStatus.remove(), 5000);
     };
     
-    // Handle timeouts
     xhr.timeout = 300000; // 5 minutes
     xhr.ontimeout = () => {
         uploadStatus.className = 'alert alert-danger';
@@ -159,7 +149,7 @@ function uploadFiles(files) {
             uploadStatus.textContent = 'Upload successful!';
             setTimeout(() => {
                 uploadStatus.remove();
-                window.location.reload(); // Reload to show new files
+                window.location.reload();
             }, 1500);
         } else {
             uploadStatus.className = 'alert alert-danger';
@@ -212,8 +202,7 @@ function createFile() {
         alert('Please enter a file name.');
         return;
     }
-    
-    // Check if file has an extension
+
     if (fileName.indexOf('.') === -1) {
         alert('Please include a file extension (e.g., .txt, .html, .php)');
         return;
