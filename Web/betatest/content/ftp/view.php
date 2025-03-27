@@ -239,9 +239,11 @@ if (isset($_GET['stream'])) {
                     <source src="view.php?file=<?= urlencode($filePath) ?>&stream=1" type="<?= $mimeType ?>">
                     Your browser does not support this video format. Try downloading the file instead.
                 </video>
+                <?php if($fileExtension !== 'mp4'): ?>
                 <div class="alert alert-warning mt-2">
                     Note: For best results, use MP4 format (H.264 codec). Other formats may not play correctly in all browsers.
                 </div>
+                <?php endif; ?>
                 <?php elseif ($isAudio): ?>
                     <audio controls autoplay style="width: 80%;">
                         <source src="view.php?file=<?= urlencode($filePath) ?>&stream=1" type="<?= $mimeType ?>">
