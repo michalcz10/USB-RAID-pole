@@ -58,6 +58,7 @@
         <a href="../changepassword.php" class="btn btn-warning">Change Password</a>
         <?php if (isset($_SESSION["admin"]) && $_SESSION["admin"] == true) { ?>
             <a href="../adminpanel.php" class="btn btn-primary">Admin Panel</a>
+            <a href="serverstat.php" class="btn btn-primary">Server Status</a>
         <?php } ?>
     </div>
 </header>

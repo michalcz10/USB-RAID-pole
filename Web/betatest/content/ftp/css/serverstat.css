@@ -1,0 +1,45 @@
+.disk-output {
+    font-family: 'Courier New', monospace;
+    white-space: pre;
+    overflow-x: auto;
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+    border-radius: 0 0 var(--bs-border-radius) var(--bs-border-radius);
+    border-left: 3px solid var(--bs-primary);
+}
+
+.disk-output::-webkit-scrollbar {
+    height: 5px;
+}
+.disk-output::-webkit-scrollbar-thumb {
+    background: var(--bs-secondary-color);
+    border-radius: 5px;
+}
+
+@media (max-width: 768px) {
+    .disk-output {
+        font-size: 0.85rem;
+    }
+}
+.hover-effect {
+    transition: opacity 0.3s ease;
+}
+
+.hover-effect:hover {
+    opacity: 0.8;
+}
+
+.theme-light .dark-logo {
+    display: none;
+}
+
+.theme-dark .light-logo {
+    display: none;
+}
+
+footer {
+    margin-top: auto;
+    padding: 20px;
+    border-top: 1px solid #ddd;
+    width: 100%;
+}
