@@ -68,6 +68,9 @@ $mimeMap = [
 $mimeType = isset($mimeMap[$fileExtension]) ? $mimeMap[$fileExtension] : 'application/octet-stream';
 
 if (isset($_GET['stream'])) {
+    // Close session to allow other scripts to run
+    session_write_close();
+
     // Prevent output buffering
     while (ob_get_level()) {
         ob_end_clean();
@@ -78,6 +81,7 @@ if (isset($_GET['stream'])) {
         ini_set('zlib.output_compression', 'Off');
     }
 
+    // Initialize range variables
     $start = 0;
     $end = $fileSize - 1;
     $length = $fileSize;
@@ -108,54 +112,91 @@ if (isset($_GET['stream'])) {
     header("Pragma: no-cache");
     header("Expires: 0");
 
+    // Debug headers
+    if (isset($_GET['debug'])) {
+        header("X-Stream-Info: Chunked SFTP Streaming");
+        header("X-File-Path: " . basename($filePath));
+        header("X-File-Size: $fileSize");
+    }
+
     // Set timeout to 0 to prevent script termination
     set_time_limit(0);
 
-    $chunkSize = 1 * 1024 * 1024; // 1MB chunks
+    // Chunk settings
+    $minChunkSize = 64 * 1024;    // 64KB minimum
+    $maxChunkSize = 2 * 1024 * 1024; // 2MB maximum
+    $chunkSize = 256 * 1024;      // Start with 256KB
 
     $currentPosition = $start;
     $bytesRemaining = $length;
+    $lastChunkTime = microtime(true);
 
     try {
         while ($bytesRemaining > 0) {
-            // Prevent output buffering
-            if (ob_get_level()) {
-                ob_flush();
-            }
-            flush();
-
-            // Check if client is still connected
-            if (connection_aborted()) {
+            // Check client connection and server status
+            if (connection_aborted() || connection_status() !== CONNECTION_NORMAL) {
+                if (isset($_GET['debug'])) {
+                    error_log("Client disconnected at position $currentPosition");
+                }
                 break;
             }
 
+            // Calculate adaptive chunk size
             $readSize = min($chunkSize, $bytesRemaining);
             
-            // Create a temporary file for this chunk
-            $chunkTemp = tempnam(sys_get_temp_dir(), 'chunk_');
+            // Get chunk from SFTP
+            $chunkData = $sftp->get($filePath, false, $currentPosition, $readSize);
             
-            if ($sftp->get($filePath, $chunkTemp, $currentPosition, $readSize)) {
-                // Read and output chunk
-                $chunkData = file_get_contents($chunkTemp);
+            if ($chunkData !== false) {
+                $bytesSent = strlen($chunkData);
+                
+                // Output chunk
                 echo $chunkData;
+                $bytesRemaining -= $bytesSent;
+                $currentPosition += $bytesSent;
                 
-                // Clean up temporary chunk file
-                @unlink($chunkTemp);
-                
-                $bytesRemaining -= strlen($chunkData);
-                $currentPosition += strlen($chunkData);
+                // Flush buffers
+                if (ob_get_level()) {
+                    ob_flush();
+                }
+                flush();
+
+                // Adaptive chunk sizing based on transfer speed
+                $currentTime = microtime(true);
+                $timeDiff = $currentTime - $lastChunkTime;
+                $lastChunkTime = $currentTime;
+
+                if ($timeDiff > 0) {
+                    $speed = $bytesSent / $timeDiff; // bytes/second
+                    $chunkSize = min(
+                        max($minChunkSize, $chunkSize * (($speed > 512 * 1024) ? 1.5 : 0.8)),
+                        $maxChunkSize
+                    );
+                }
+
+                if (isset($_GET['debug'])) {
+                    header("X-Chunk-Size: $bytesSent");
+                    header("X-Position: $currentPosition");
+                    header("X-Remaining: $bytesRemaining");
+                }
             } else {
-                error_log("SFTP reading error at position $currentPosition");
+                error_log("SFTP read error at position $currentPosition");
                 break;
             }
 
-            // Small sleep to prevent overwhelming the server
-            usleep(10000); // 10 milliseconds
+            // Throttle to prevent CPU overload
+            usleep(100000); // 100ms
         }
     } catch (Exception $e) {
         error_log("Streaming error: " . $e->getMessage());
+        if (isset($_GET['debug'])) {
+            header("X-Stream-Error: " . $e->getMessage());
+        }
     }
-    
+
+    if (isset($_GET['debug'])) {
+        error_log("Streaming completed. Sent $currentPosition bytes of $fileSize");
+    }
     exit;
 }
 ?>
