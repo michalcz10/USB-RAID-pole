@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Check if user is logged in
 if (!isset($_SESSION['uname'])) {
     header("location: ../index.php");
     exit();
@@ -12,7 +11,6 @@ $username = "userlogin";
 $password = "zl*eDJmgT5sQNTuj";
 $db = "usbraidlogin";
 
-// Process form submission
 $message = "";
 $messageType = "";
 
@@ -23,12 +21,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $confirm_password = htmlspecialchars($_POST['confirm_password']);
         $uname = $_SESSION['uname'];
 
-        // Validate password match
         if ($new_password !== $confirm_password) {
             $message = "New passwords do not match!";
             $messageType = "danger";
         } else {
-            // Connect to database
             $conn = new mysqli($servername, $username, $password, $db);
             $conn->set_charset("utf8");
 
@@ -36,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = "Database connection failed!";
                 $messageType = "danger";
             } else {
-                // Verify current password
                 $sql = "SELECT pswd FROM users WHERE uname=?";
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param("s", $uname);
@@ -48,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stored_hash = $row["pswd"];
 
                     if (password_verify($current_password, $stored_hash)) {
-                        // Update password
                         $new_hash = password_hash($new_password, PASSWORD_BCRYPT);
                         $update_sql = "UPDATE users SET pswd=? WHERE uname=?";
                         $update_stmt = $conn->prepare($update_sql);

@@ -19,10 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     
     $dirName = $_POST['dirName'];
     
-    // Sanitize directory name
     $dirName = preg_replace('/[^\w\-\.]/', '_', $dirName);
     
-    // Ensure the path is within the allowed directory
     if (strpos($currentPath, $defaultPath) !== 0) {
         $currentPath = $defaultPath;
     }

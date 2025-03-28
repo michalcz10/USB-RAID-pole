@@ -21,10 +21,8 @@ if ($conn->connect_error) {
     die("Database connection failed: " . $conn->connect_error);
 }
 
-// Handle adding user
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['uname']) && isset($_POST['pswd'])) {
-        // Sanitize and validate input
         $uname = trim($_POST['uname']);
         $pswd = trim($_POST['pswd']);
         $is_admin = isset($_POST['admin']) ? 1 : 0;
@@ -37,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['message'] = 'Error: Username and password are required!';
             $_SESSION['message_type'] = 'error';
         } else {
-            // Check if username already exists
             $sql_check = "SELECT * FROM users WHERE uname = ?";
             $stmt_check = $conn->prepare($sql_check);
             if (!$stmt_check) {
@@ -52,20 +49,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['message'] = 'Error: Username already exists!';
                     $_SESSION['message_type'] = 'error';
                 } else {
-                    // Insert new user
                     $sql_insert = "INSERT INTO users (uname, pswd, admin, defPath, delPer, downPer, upPer) VALUES (?, ?, ?, ?, ?, ?, ?)";
                     $stmt_insert = $conn->prepare($sql_insert);
                     if (!$stmt_insert) {
                         $_SESSION['message'] = 'Error: Database preparation failed.';
                         $_SESSION['message_type'] = 'error';
                     } else {
-                        // Hash the password
                         $hash = password_hash($pswd, PASSWORD_BCRYPT);
                         if (!$hash) {
                             $_SESSION['message'] = 'Error: Password hashing failed.';
                             $_SESSION['message_type'] = 'error';
                         } else {
-                            // Bind parameters and execute
                             $stmt_insert->bind_param("ssisiii", $uname, $hash, $is_admin, $defPath, $delPer, $dowPer, $upPer);
                             if ($stmt_insert->execute()) {
                                 $_SESSION['message'] = 'User added successfully!';
@@ -84,7 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Redirect to prevent form resubmission
         header("Location: adminpanel.php");
         exit();
     } else {
@@ -95,7 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Handle user deletion
 if (isset($_GET['delete'])) {
     $delete_uname = htmlspecialchars($_GET['delete']);
     $sql = "DELETE FROM users WHERE uname=?";
@@ -115,18 +107,15 @@ if (isset($_GET['delete'])) {
         $_SESSION['message_type'] = 'error';
     }
 
-    // Redirect to prevent repeated deletion
     header("Location: adminpanel.php");
     exit();
 }
 
-// Fetch users for the table
 $result = $conn->query("SELECT uname, admin, defPath, delPer, downPer, upPer FROM users");
 
-// Display messages from session
 $message = $_SESSION['message'] ?? '';
 $message_type = $_SESSION['message_type'] ?? '';
-unset($_SESSION['message']); // Clear the message after displaying
+unset($_SESSION['message']);
 unset($_SESSION['message_type']);
 ?>
 
