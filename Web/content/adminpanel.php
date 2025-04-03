@@ -10,8 +10,8 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 $servername = "localhost:3306";
-$username = "userlogin";
-$password = "zl*eDJmgT5sQNTuj";
+$username = "UNAME";
+$password = "PSWD";
 $db = "usbraidlogin";
 
 $conn = new mysqli($servername, $username, $password, $db);
