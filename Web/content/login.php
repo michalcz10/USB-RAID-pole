@@ -3,8 +3,8 @@ session_start();
 
 if (isset($_POST['uname'], $_POST['pswd'])) {
     $servername = "localhost:3306";
-    $username = "userlogin";
-    $password = "zl*eDJmgT5sQNTuj";
+    $username = "UNAME";
+    $password = "PSWD";
     $db = "usbraidlogin";
 
     $uname = htmlspecialchars($_POST['uname']);
