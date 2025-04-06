@@ -194,6 +194,7 @@
                         <?php
                         
                         $fileExtension = pathinfo($file, PATHINFO_EXTENSION);
+                        $isPDF = strtolower($fileExtension) === 'pdf';
                         $isImage = in_array($fileExtension, $imageExtensions);
                         $isVideo = in_array($fileExtension, $videoExtensions);
                         $isAudio = in_array($fileExtension, $audioExtensions);
@@ -219,6 +220,11 @@
                                         <?= htmlspecialchars($file) ?>
                                     </a>
                                     <span class="badge bg-secondary rounded-pill"><?= htmlspecialchars($fileExtension) ?></span>
+                                    <?php elseif ($isPDF): ?>
+                                        <a class="text-info-emphasis" href="pdf.php?file=<?= urlencode($currentPath . '/' . $file) ?>&type=pdf" target="_blank">
+                                            <?= htmlspecialchars($file) ?>
+                                        </a>
+                                        <span class="badge bg-danger rounded-pill">PDF</span>
                                 <?php else: ?>
                                     <?= htmlspecialchars($file) ?>
                                     <span class="badge bg-light text-dark rounded-pill"><?= htmlspecialchars($fileExtension) ?></span>

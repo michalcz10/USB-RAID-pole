@@ -62,7 +62,7 @@ $mimeMap = [
     'wav' => 'audio/wav',
     'm4a' => 'audio/mp4',
     'flac' => 'audio/flac',
-    'aac' => 'audio/aac'
+    'aac' => 'audio/aac',
 ];
 
 $mimeType = isset($mimeMap[$fileExtension]) ? $mimeMap[$fileExtension] : 'application/octet-stream';
