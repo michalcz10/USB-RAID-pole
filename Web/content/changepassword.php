@@ -7,8 +7,8 @@ if (!isset($_SESSION['uname'])) {
 }
 
 $servername = "localhost:3306";
-$username = "userlogin";
-$password = "zl*eDJmgT5sQNTuj";
+$username = "UNAME";
+$password = "PSWD";
 $db = "usbraidlogin";
 
 $message = "";

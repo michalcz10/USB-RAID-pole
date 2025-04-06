@@ -6,8 +6,8 @@ $defPath = $_SESSION['defPath'] ?? '/';
 
 // SFTP Configuration
 $host = 'localhost';
-$username = 'dataacc';
-$password = 'micalis1235';
+$username = 'UNAME';
+$password = 'PSWD';
 $defaultPath = $defPath;
 
 function initializeSFTP($host, $username, $password) {
