@@ -139,25 +139,28 @@ if (isset($_GET['stream'])) {
         </div>
     </header>
 
-    <div id="loadingMessage" class="d-flex align-items-center justify-content-center position-fixed w-100 h-100">
-        <div class="bg-dark bg-opacity-75 text-white p-3 rounded">
-            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            Loading PDF...
+    <div id="pdfContainer" class="container-fluid position-relative">
+        <div id="loadingMessage" class="d-flex align-items-center justify-content-center w-100 h-100">
+            <div class="bg-dark bg-opacity-75 text-white p-3 rounded">
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Loading PDF...
+            </div>
         </div>
     </div>
 
-    <div id="pdfContainer" class="container-fluid"></div>
-    
     <div class="controls">
         <div class="btn-group" role="group" aria-label="PDF Navigation">
-            <button id="prev" class="btn btn-light">
+            <button id="prev" class="btn btn-light border">
                 <i class="bi bi-chevron-left"></i> Previous
             </button>
-            <button class="btn btn-light disabled">
+            <button class="btn btn-light border disabled">
                 Page <span id="pageNum"></span> of <span id="pageCount"></span>
             </button>
-            <button id="next" class="btn btn-light">
+            <button id="next" class="btn btn-light border">
                 Next <i class="bi bi-chevron-right"></i>
+            </button>
+            <button id="fullscreen" class="btn btn-light border">
+                <i class="bi bi-fullscreen"></i>
             </button>
         </div>
     </div>
@@ -166,10 +169,6 @@ if (isset($_GET['stream'])) {
                 <a href="download.php?file=<?= urlencode($filePath) ?>" class="btn btn-success m-3">Download</a>
         <?php endif; ?>
     </div>
-
-
-
-    
 
     <footer class="d-flex flex-column justify-content-center align-items-center p-3 border-top gap-3 m-3">
         <span class="text-muted">Developed by Michal Sedlák</span>
@@ -186,80 +185,147 @@ if (isset($_GET['stream'])) {
     </footer>
 </div>
 
-    <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        <script>
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    
+            const url = 'pdf.php?file=<?= urlencode($filePath) ?>&stream=1';
+            const pdfFileName = '<?= htmlspecialchars($fileName) ?>';
+            let currentPage = 1;
+            let pdfDoc = null;
 
-        const url = 'pdf.php?file=<?= urlencode($filePath) ?>&stream=1';
-        let currentPage = 1;
-        let pdfDoc = null;
+            const PdfPageStorage = {
+                getStorageKey() {
+                    return `pdf_page_${pdfFileName}`;
+                },
+                
+                savePage(pageNum) {
+                    localStorage.setItem(this.getStorageKey(), pageNum.toString());
+                },
+                
+                loadPage() {
+                    return parseInt(localStorage.getItem(this.getStorageKey())) || 1;
+                }
+            };
+    
+            async function loadPDF() {
+                try {
+                    pdfDoc = await pdfjsLib.getDocument(url).promise;
+                    document.getElementById('pageCount').textContent = pdfDoc.numPages;
 
-        async function loadPDF() {
-            try {
-                pdfDoc = await pdfjsLib.getDocument(url).promise;
-                document.getElementById('pageCount').textContent = pdfDoc.numPages;
-                renderPage(currentPage);
-                document.getElementById('loadingMessage').classList.add('d-none');
-            } catch (error) {
-                console.error('Error loading PDF:', error);
-                const loadingMessage = document.getElementById('loadingMessage');
-                loadingMessage.querySelector('div').classList.add('bg-danger');
-                loadingMessage.querySelector('div').innerHTML = '<i class="bi bi-exclamation-triangle"></i> Error loading PDF';
+                    currentPage = Math.min(PdfPageStorage.loadPage(), pdfDoc.numPages);
+                    
+                    renderPage(currentPage);
+                    document.getElementById('loadingMessage').classList.add('d-none');
+                } catch (error) {
+                    console.error('Error loading PDF:', error);
+                    const loadingMessage = document.getElementById('loadingMessage');
+                    loadingMessage.querySelector('div').classList.add('bg-danger');
+                    loadingMessage.querySelector('div').innerHTML = '<i class="bi bi-exclamation-triangle"></i> Error loading PDF';
+                }
             }
-        }
-
-        async function renderPage(pageNumber) {
-            const page = await pdfDoc.getPage(pageNumber);
+    
+            async function renderPage(pageNumber) {
+                const page = await pdfDoc.getPage(pageNumber);
+                const pageContainer = document.createElement('div');
+                pageContainer.className = 'page-container';
             
-            // Calculate scale based on window width
-            const windowWidth = window.innerWidth;
-            let scale = 1.5;
-            if (windowWidth < 768) {
-                scale = (windowWidth - 40) / page.getViewport({ scale: 1 }).width;
-            }
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+                const viewport = page.getViewport({ scale: 1.0 });
+                
+                const pixelRatio = window.devicePixelRatio || 1;
+                const widthScale = (windowWidth / viewport.width);
+                const heightScale = (windowHeight / viewport.height);
+                
+                let scale;
+                if (isFullscreen) {
+                    scale = Math.min(widthScale, heightScale) * 0.95;
+                } else if (windowWidth < 768) {
+                    scale = widthScale * 0.95;
+                } else {
+                    scale = Math.min(widthScale, heightScale, 2);
+                }
+                
+                const scaledViewport = page.getViewport({ scale: scale * pixelRatio });
+                
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                
+                canvas.height = scaledViewport.height;
+                canvas.width = scaledViewport.width;
+                
+                canvas.style.width = `${scaledViewport.width / pixelRatio}px`;
+                canvas.style.height = `${scaledViewport.height / pixelRatio}px`;
             
-            const viewport = page.getViewport({ scale });
-
-            const pageContainer = document.createElement('div');
-            pageContainer.className = 'page-container';
+                pageContainer.appendChild(canvas);
+                document.getElementById('pdfContainer').innerHTML = '';
+                document.getElementById('pdfContainer').appendChild(pageContainer);
+                document.getElementById('pageNum').textContent = pageNumber;
             
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-
-            pageContainer.appendChild(canvas);
-            document.getElementById('pdfContainer').innerHTML = '';
-            document.getElementById('pdfContainer').appendChild(pageContainer);
-            document.getElementById('pageNum').textContent = pageNumber;
-
-            await page.render({
-                canvasContext: context,
-                viewport: viewport
-            }).promise;
-        }
-
-        document.getElementById('prev').addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderPage(currentPage);
+                await page.render({
+                    canvasContext: context,
+                    viewport: scaledViewport // Use scaledViewport instead of viewport
+                }).promise;
+            
+                PdfPageStorage.savePage(pageNumber);
             }
-        });
+            document.getElementById('prev').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderPage(currentPage);
+                }
+            });
+    
+            document.getElementById('next').addEventListener('click', () => {
+                if (currentPage < pdfDoc.numPages) {
+                    currentPage++;
+                    renderPage(currentPage);
+                }
+            });
 
-        document.getElementById('next').addEventListener('click', () => {
-            if (currentPage < pdfDoc.numPages) {
-                currentPage++;
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && isFullscreen) {
+                    document.getElementById('fullscreen').click();
+                } else if (e.key === 'ArrowLeft' && currentPage > 1) {
+                    currentPage--;
+                    renderPage(currentPage);
+                } else if (e.key === 'ArrowRight' && currentPage < pdfDoc.numPages) {
+                    currentPage++;
+                    renderPage(currentPage);
+                }
+            });
+    
+            window.addEventListener('resize', () => {
+                if (currentPage) {
+                    renderPage(currentPage);
+                }
+            });
+
+            let isFullscreen = false;
+
+            document.getElementById('fullscreen').addEventListener('click', () => {
+                const container = document.querySelector('.custom-container');
+                const fullscreenBtn = document.getElementById('fullscreen');
+                const fullscreenIcon = fullscreenBtn.querySelector('i');
+                
+                if (!isFullscreen) {
+                    container.classList.add('fullscreen-mode');
+                    document.body.style.overflow = 'hidden';
+                    fullscreenIcon.classList.remove('bi-fullscreen');
+                    fullscreenIcon.classList.add('bi-fullscreen-exit');
+                } else {
+                    container.classList.remove('fullscreen-mode');
+                    document.body.style.overflow = '';
+                    fullscreenIcon.classList.remove('bi-fullscreen-exit');
+                    fullscreenIcon.classList.add('bi-fullscreen');
+                }
+                
+                isFullscreen = !isFullscreen;
                 renderPage(currentPage);
-            }
-        });
-
-        window.addEventListener('resize', () => {
-            if (currentPage) {
-                renderPage(currentPage);
-            }
-        });
-
-        loadPDF();
-    </script>
+            });
+                
+            loadPDF();
+        </script>
     <script src="../../js/theme.js"></script>
 </body>
 </html>

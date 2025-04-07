@@ -221,7 +221,7 @@
                                     </a>
                                     <span class="badge bg-secondary rounded-pill"><?= htmlspecialchars($fileExtension) ?></span>
                                     <?php elseif ($isPDF): ?>
-                                        <a class="text-info-emphasis" href="pdf.php?file=<?= urlencode($currentPath . '/' . $file) ?>&type=pdf" target="_blank">
+                                        <a class="text-info-emphasis" href="pdf.php?file=<?= urlencode($currentPath . '/' . $file) ?>&type=pdf">
                                             <?= htmlspecialchars($file) ?>
                                         </a>
                                         <span class="badge bg-danger rounded-pill">PDF</span>
