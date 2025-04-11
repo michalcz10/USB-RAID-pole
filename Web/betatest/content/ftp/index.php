@@ -83,7 +83,8 @@
                 <?php } ?>
             </div>
 
-            <!-- Create Directory Dialog -->
+        <!-- Modal Forms -->
+        <!-- Create Directory Dialog -->
         <div class="modal fade" id="createDirModal" tabindex="-1" aria-labelledby="createDirModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -127,6 +128,37 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Rename Confirmation Dialog -->
+            <div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="renameModalLabel">Rename Item</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="rename.php">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="originalName" class="form-label">Current Name:</label>
+                                <input type="text" class="form-control" id="originalName" disabled>
+                                <input type="hidden" id="fullPath" name="path">
+                                <input type="hidden" id="isDirectory" name="isDirectory">
+                            </div>
+                            <div class="mb-3">
+                                <label for="newName" class="form-label">New Name:</label>
+                                <input type="text" class="form-control" id="newName" name="newName" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Rename</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            </div>
+            <!-- End of Modal Forms -->
 
             <?php if (isset($_SESSION["upPer"]) && $_SESSION["upPer"] == true) { ?>
                 <div class="dropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
@@ -185,6 +217,9 @@
                                         <input type="hidden" name="file" value="<?= htmlspecialchars($currentPath . '/' . $directory) ?>">
                                         <button type="submit" class="btn btn-success">Download</button>
                                     </form>
+                                <?php endif; ?>
+                                <?php if (isset($_SESSION["upPer"]) && $_SESSION["upPer"] == true) : ?>
+                                    <button type="button" class="btn btn-warning" onclick="openRenameModal('<?= htmlspecialchars(addslashes($directory)) ?>', '<?= htmlspecialchars(addslashes($currentPath . '/' . $directory)) ?>')">Rename</button>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -246,6 +281,9 @@
                                         <input type="hidden" name="file" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
                                         <button type="submit" class="btn btn-success">Download</button>
                                     </form>
+                                <?php endif; ?>
+                                <?php if (isset($_SESSION["upPer"]) && $_SESSION["upPer"] == true) : ?>
+                                    <button type="button" class="btn btn-warning" onclick="openRenameModal('<?= htmlspecialchars(addslashes($file)) ?>', '<?= htmlspecialchars(addslashes($currentPath . '/' . $file)) ?>')">Rename</button>
                                 <?php endif; ?>
                             </td>
                         </tr>
