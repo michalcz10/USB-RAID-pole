@@ -30,6 +30,7 @@
     $videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
     $audioExtensions = ['mp3', 'wav', 'm4a', 'flac', 'aac'];
     $editableExtensions = ['txt', 'html', 'css', 'js', 'php', 'xml', 'json', 'md', 'csv', 'log', 'ini', 'conf', 'sh', 'bat', 'py', 'rb', 'java', 'c', 'cpp', 'h', 'hpp'];
+    $archiveExtensions = ['zip', 'rar', 'tar', 'gz', '7z', 'bz2', 'xz', 'tar.gz', 'tar.bz2', 'tar.xz'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -208,18 +209,18 @@
                                 <?php if (isset($_SESSION["delPer"]) && $_SESSION["delPer"] == true) : ?>
                                     <form method="POST" action="delete.php" style="display:inline;">
                                         <input type="hidden" name="delete" value="<?= htmlspecialchars($currentPath . '/' . $directory) ?>">
-                                        <button type="submit" class="btn btn-danger" onclick="confirmDelete(event)">Delete</button>
+                                        <button type="submit" class="btn btn-danger mt-1 mb-1" onclick="confirmDelete(event)">Delete</button>
                                     </form>
                                 <?php endif; ?>
 
                                 <?php if (isset($_SESSION["downPer"]) && $_SESSION["downPer"] == true) : ?>
                                     <form method="POST" action="download.php" style="display:inline;">
                                         <input type="hidden" name="file" value="<?= htmlspecialchars($currentPath . '/' . $directory) ?>">
-                                        <button type="submit" class="btn btn-success">Download</button>
+                                        <button type="submit" class="btn btn-success mt-1 mb-1">Download</button>
                                     </form>
                                 <?php endif; ?>
                                 <?php if (isset($_SESSION["upPer"]) && $_SESSION["upPer"] == true) : ?>
-                                    <button type="button" class="btn btn-warning" onclick="openRenameModal('<?= htmlspecialchars(addslashes($directory)) ?>', '<?= htmlspecialchars(addslashes($currentPath . '/' . $directory)) ?>')">Rename</button>
+                                    <button type="button" class="btn btn-warning mt-1 mb-1" onclick="openRenameModal('<?= htmlspecialchars(addslashes($directory)) ?>', '<?= htmlspecialchars(addslashes($currentPath . '/' . $directory)) ?>')">Rename</button>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -235,6 +236,10 @@
                         $isAudio = in_array($fileExtension, $audioExtensions);
                         $isMedia = $isImage || $isVideo || $isAudio;
                         $isEditable = in_array($fileExtension, $editableExtensions);
+                        $isArchive = in_array($fileExtension, $archiveExtensions);
+                        if (!$isArchive && strpos($file, '.tar.') !== false) {
+                            $isArchive = true;
+                        }
                         ?>
                         <tr>
                             <td>
@@ -272,18 +277,24 @@
                                 <?php if (isset($_SESSION["delPer"]) && $_SESSION["delPer"] == true) : ?>
                                     <form method="POST" action="delete.php" style="display:inline;">
                                         <input type="hidden" name="delete" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
-                                        <button type="submit" class="btn btn-danger" onclick="confirmDelete(event)">Delete</button>
+                                        <button type="submit" class="btn btn-danger mt-1 mb-1" onclick="confirmDelete(event)">Delete</button>
                                     </form>
                                 <?php endif; ?>
 
                                 <?php if (isset($_SESSION["downPer"]) && $_SESSION["downPer"] == true) : ?>
                                     <form method="POST" action="download.php" style="display:inline;">
                                         <input type="hidden" name="file" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
-                                        <button type="submit" class="btn btn-success">Download</button>
+                                        <button type="submit" class="btn btn-success mt-1 mb-1">Download</button>
                                     </form>
                                 <?php endif; ?>
                                 <?php if (isset($_SESSION["upPer"]) && $_SESSION["upPer"] == true) : ?>
-                                    <button type="button" class="btn btn-warning" onclick="openRenameModal('<?= htmlspecialchars(addslashes($file)) ?>', '<?= htmlspecialchars(addslashes($currentPath . '/' . $file)) ?>')">Rename</button>
+                                    <button type="button" class="btn btn-warning mt-1 mb-1" onclick="openRenameModal('<?= htmlspecialchars(addslashes($file)) ?>', '<?= htmlspecialchars(addslashes($currentPath . '/' . $file)) ?>')">Rename</button>
+                                <?php endif; ?>
+                                <?php if ($isArchive && isset($_SESSION["upPer"]) && $_SESSION["upPer"] == true) : ?>
+                                    <form method="POST" action="extract.php" style="display:inline;">
+                                        <input type="hidden" name="archive" value="<?= htmlspecialchars($currentPath . '/' . $file) ?>">
+                                        <button type="submit" class="btn btn-info mt-1 mb-1">Extract</button>
+                                    </form>
                                 <?php endif; ?>
                             </td>
                         </tr>
